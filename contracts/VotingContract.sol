@@ -62,5 +62,14 @@ contract Create {
         string voter_ipfs
     }
 
-    
+    //----------END OF VOTER DATA
+
+    constructor() {
+        VotingOrganizer = msg.sender;
+    }
+
+    function setCandidate(address _address,string memory _age, string memory _name,string memory _image,string memory _ipfs )  returns () {
+        require(votingOrganizer == msg.sender, "Only organizer can create candidates");
+        _candidateId.increment();
+    }
 }
