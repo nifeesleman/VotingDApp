@@ -41,10 +41,26 @@ contract Create {
     address[] public voterSAddresses;
     mapping(address => Voter) public voters;
 
-    uint 256 voter_voterId;
-    string voter_name;
-    string voter_image;
-    address voter_address;
-    uint256 voter_allowed;
-    bool 
+    struct Voter {
+        uint256 voter_voterId;
+        string voter_name;
+        string voter_image;
+        address voter_address;
+        uint256 voter_allowed;
+        bool voter_voted;
+        uint256 voter_vote;
+        string voter_ipfs;
+    }
+    event VoterCreated{
+        uint256 indexed voter_voterId,
+        string voter_name,
+        string voter_image,
+        address voter_address,
+        uint256 voter_allowed,
+        bool voter_voted,
+        uint256 voter_vote,
+        string voter_ipfs
+    }
+
+    
 }
