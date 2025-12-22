@@ -36,6 +36,10 @@ export const VotingProvider = ({ children }) => {
   const checkIfWalletConnected = async () => {
     try {
       if (!window.ethereum) return setError("Install MetaMask");
+      const accounts = await window.ethereum.request({ method: "eth_accounts" });
+      if (accounts.length) {
+        setCurrentAccount(accounts[0]);
+      }
   return (
     <VoterContext.Provider value={{ VotingTittle }}>
       {children}
