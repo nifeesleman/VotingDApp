@@ -117,4 +117,26 @@ contract Create {
             candidates[_address]._address
         );
     }
+
+    ///-------------VOTER SECTION---------///
+
+    function voterRight(address _address, string memory _name, string memory _image, string memory _ipfs) public {
+        require(VotingOrganizer == msg.sender, "Only organizer can give voting rights");
+        _voterId.increment();
+
+        uint256 idNumber = _voterId.current();
+
+        Voter storage voter = voters[_address];
+        require(voter.voter_allowed == 0, "Voter already has voting rights");
+        voter.voter_allowed = 1;
+        voter.voter_name = _name;
+        voter.voter_image = _image;
+        voter.voter_address = _address;
+        voter.voter_voterId = idNumber;
+        voter.voter_vote = 1000;
+        voter.voter_voted = false;
+        voter.voter_ipfs = _ipfs;
+
+        voterSAddresses.push(_address);
+    }
 }
