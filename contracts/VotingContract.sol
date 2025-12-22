@@ -154,4 +154,31 @@ contract Create {
         votedVoters.push(msg.sender);
         candidates[_candidateAddress].voteCount += voter.voter_allowed;
     }
+
+    function getVoterLength() public view returns (uint256) {
+        return voterSAddresses.length;
+    }
+
+    function getVoterdata(address _address)
+        public
+        view
+        returns (uint256, string memory, string memory, address, uint256, bool)
+    {
+        return (
+            voters[_address].voter_voterId,
+            voters[_address].voter_name,
+            voters[_address].voter_image,
+            voters[_address].voter_address,
+            voters[_address].voter_allowed,
+            voters[_address].voter_voted
+        );
+    }
+
+    function getVotedVoterList() public view returns (address[] memory) {
+        return votedVoters;
+    }
+
+    function getVoterList() public view returns (address[] memory) {
+        return voterSAddresses;
+    }
 }
