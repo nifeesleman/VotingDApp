@@ -19,13 +19,23 @@ export const VotingProvider = ({ children }) => {
   const [candidateLength, setCandidateLength] = useState("");
   const pushCandidate = [];
   const candidateIndex = [];
-  useState;
+  const [candidateList, setCandidateList] = useState(pushCandidate);
+
+  //--------END CANDIDATE DATA
+  const [error, setError] = useState("");
+  const highestVote = [];
+
   //--------VOTER SECTION
 
   const pushVoter = [];
-  const [voterArray, setVoterArray] = useState([]);
+  const [voterArray, setVoterArray] = useState(pushVoter);
   const [voterLength, setVoterLength] = useState("");
-  conat[(voterAddress, setVoterAddress)] = useState([]);
+  const [voterAddress, setVoterAddress] = useState([]);
+
+  //---------CONNECTING METAMASK WALLET
+  const checkIfWalletConnected = async () => {
+    try {
+      if (!window.ethereum) return setError("Install MetaMask");
   return (
     <VoterContext.Provider value={{ VotingTittle }}>
       {children}
