@@ -61,17 +61,18 @@ export const VotingProvider = ({ children }) => {
       setError("An error occurred while connecting the wallet");
     }
   };
-  
+
   //----------UPLOAD TO IPFS VOTER IMAGE
 
   const uploadToIPFS = async (file) => {
     try {
       const added = await client.add({ content: file });
       const url = `https://ipfs.infura.io/ipfs/${added.path}`;
-      return url;}
-       catch (error) {
-        setError("An error occurred while uploading to IPFS");
-       }
+      return url;
+    } catch (error) {
+      setError("An error occurred while uploading to IPFS");
+    }
+  };
   return (
     <VoterContext.Provider
       value={{

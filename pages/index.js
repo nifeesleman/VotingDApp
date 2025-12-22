@@ -9,6 +9,6 @@ import Card from "../components/Card/Card";
 
 export const index = () => {
   const { VotingTittle } = useContext(VoterContext);
-  return <div>{VotingTittle}</div>;
+  return <div>{VotingTittle};</div>;
 };
 export default index;
