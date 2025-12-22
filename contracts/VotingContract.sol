@@ -60,7 +60,7 @@ contract Create {
         bool voter_voted,
         uint256 voter_vote,
         string voter_ipfs
-    )
+    );
 
     //----------END OF VOTER DATA
 
@@ -97,6 +97,11 @@ contract Create {
     }
 
     function getCandidate() public view returns (address[] memory){
-        
+        return candidateAddresses;
     }
+
+    function getCandidateLength() public view returns(uint256){
+        return candidateAddresses.length;
+    }
+
 }
