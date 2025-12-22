@@ -14,6 +14,18 @@ const fetchContract = (signerOrProvider) =>
 export const VoterContext = React.createContext();
 export const VotingProvider = ({ children }) => {
   const VotingTittle = "Decentralized Voting System";
+  const router = useRouter();
+  const [currentAccount, setCurrentAccount] = useState("");
+  const [candidateLength, setCandidateLength] = useState("");
+  const pushCandidate = [];
+  const candidateIndex = [];
+  useState;
+  //--------VOTER SECTION
+
+  const pushVoter = [];
+  const [voterArray, setVoterArray] = useState([]);
+  const [voterLength, setVoterLength] = useState("");
+  conat[(voterAddress, setVoterAddress)] = useState([]);
   return (
     <VoterContext.Provider value={{ VotingTittle }}>
       {children}
