@@ -84,6 +84,38 @@ export const allowdVoters = () => {
           </div>
         )}
       </div>
+      <div className={Style.voter}>
+        <div className={Style.voter__container}>
+          <h1>Create New Voter</h1>
+          <div className={Style.voter__container__box}>
+            <div className={Style.voter__container__box__div}>
+              <div {...getRootProps()}>
+                <input {...getInputProps()} />
+                <div className={Style.voter__container__box__div__info}>
+                  <p>Upload File: JPG,PNG,GIF,WEBM Max 10MB</p>
+                  <div
+                    className={Style.voter__container__box__div__info__image}
+                  >
+                    <Image
+                      src={Image.creator}
+                      alt="File upload"
+                      width={150}
+                      height={150}
+                      objectFit="contain"
+                    />
+                  </div>
+                  <p>Drag & Drop File</p>
+                  <p>or Browse media on your device</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className={Style.input__container}>
+        <Input/>
+      </div>
     </div>
   );
 };
