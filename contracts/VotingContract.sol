@@ -138,5 +138,20 @@ contract Create {
         voter.voter_ipfs = _ipfs;
 
         voterSAddresses.push(_address);
+        emit VoterCreated(
+            idNumber, _name, _image, _address, voter.voter_allowed, voter.voter_voted, voter.voter_vote, _ipfs
+        );
+    }
+
+    function vote(address _candidateAddress, uint256 _candidateVoteId) external {
+        Voter storage voter = voters[msg.sender];
+        require(!voter.voter_voted, "You have already voted");
+        require(voter.voter_allowed != 0, "You do not have voting rights");
+
+        voter.voter_voted = true;
+        voter.voter_vote = _candidateVoteId;
+
+        votedVoters.push(msg.sender);
+        candidates[_candidateAddress].voteCount += voter.voter_allowed;
     }
 }
