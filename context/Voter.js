@@ -36,12 +36,51 @@ export const VotingProvider = ({ children }) => {
   const checkIfWalletConnected = async () => {
     try {
       if (!window.ethereum) return setError("Install MetaMask");
-      const accounts = await window.ethereum.request({ method: "eth_accounts" });
+      const accounts = await window.ethereum.request({
+        method: "eth_accounts",
+      });
       if (accounts.length) {
         setCurrentAccount(accounts[0]);
+      } else {
+        setError("No Account Found");
       }
+    } catch (error) {
+      setError("An error occurred while checking the wallet");
+    }
+  };
+
+  //---------CONNECT WALLET FUNCTION
+  const connectWallet = async () => {
+    try {
+      if (!window.ethereum) return setError("Install MetaMask");
+      const accounts = await window.ethereum.request({
+        method: "eth_requestAccounts",
+      });
+      setCurrentAccount(accounts[0]);
+    } catch (error) {
+      setError("An error occurred while connecting the wallet");
+    }
+  };
+  
+  //----------UPLOAD TO IPFS VOTER IMAGE
+
+  const uploadToIPFS = async (file) => {
+    try {
+      const added = await client.add({ content: file });
+      const url = `https://ipfs.infura.io/ipfs/${added.path}`;
+      return url;}
+       catch (error) {
+        setError("An error occurred while uploading to IPFS");
+       }
   return (
-    <VoterContext.Provider value={{ VotingTittle }}>
+    <VoterContext.Provider
+      value={{
+        VotingTittle,
+        checkIfWalletConnected,
+        connectWallet,
+        uploadToIPFS,
+      }}
+    >
       {children}
     </VoterContext.Provider>
   );
