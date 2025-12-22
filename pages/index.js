@@ -7,7 +7,8 @@ import { VoterContext } from "../context/Voter";
 import Style from "../styles/index.module.css";
 import Card from "../components/Card/Card";
 
-export const Home = () => {
-  return <div>Home</div>;
+export const index = () => {
+  const { VotingTittle } = useContext(VoterContext);
+  return <div>{VotingTittle}</div>;
 };
-export default Home;
+export default index;
