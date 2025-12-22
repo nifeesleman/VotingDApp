@@ -68,8 +68,14 @@ contract Create {
         VotingOrganizer = msg.sender;
     }
 
-    function setCandidate(address _address,string memory _age, string memory _name,string memory _image,string memory _ipfs )  returns () {
-        require(votingOrganizer == msg.sender, "Only organizer can create candidates");
+    function setCandidate(
+        address _address,
+        string memory _age,
+        string memory _name,
+        string memory _image,
+        string memory _ipfs
+    ) public {
+        require(VotingOrganizer == msg.sender, "Only organizer can create candidates");
         _candidateId.increment();
 
         uint256 idNumber = _candidateId.current();
@@ -85,23 +91,30 @@ contract Create {
 
         candidateAddresses.push(_address);
 
-        emit CandidateCreate(
-            idNumber,
-            _age,
-            _name,
-            _image,
-            candidate.voteCount,
-            _address,
-            _ipfs
-        );
+        emit CandidateCreate(idNumber, _age, _name, _image, candidate.voteCount, _address, _ipfs);
     }
 
-    function getCandidate() public view returns (address[] memory){
+    function getCandidate() public view returns (address[] memory) {
         return candidateAddresses;
     }
 
-    function getCandidateLength() public view returns(uint256){
+    function getCandidateLength() public view returns (uint256) {
         return candidateAddresses.length;
     }
 
+    function getcandidatedata(address _address)
+        public
+        view
+        returns (string memory, string memory, uint256, string memory, uint256, string memory, address)
+    {
+        return (
+            candidates[_address].age,
+            candidates[_address].name,
+            candidates[_address].candidateId,
+            candidates[_address].image,
+            candidates[_address].voteCount,
+            candidates[_address].ipfs,
+            candidates[_address]._address
+        );
+    }
 }
