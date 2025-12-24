@@ -19,7 +19,7 @@ export const VotingProvider = ({ children }) => {
   const [candidateLength, setCandidateLength] = useState("");
   const pushCandidate = [];
   const candidateIndex = [];
-  const [candidateList, setCandidateList] = useState(pushCandidate);
+  const [candidateArray, setCandidateArray] = useState(pushCandidate);
 
   //--------END CANDIDATE DATA
   const [error, setError] = useState("");

@@ -8,7 +8,7 @@ import Style from "../styles/allowedVoters.module.css";
 import { VoterContext } from "../context/Voter";
 import { Button } from "../components/Button/Button";
 import { Input } from "../components/Input/Input";
-export const allowdVoters = () => {
+const allowedVoters = () => {
   const [fileUrl, setFileUrl] = useState(null);
   const [formInput, setFormInput] = useState({
     name: "",
@@ -25,7 +25,7 @@ export const allowdVoters = () => {
     setFileUrl(url);
   });
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+  const { getRootProps, getInputProps } = useDropzone({
     onDrop,
     accept: "image/*",
     maxSize: 5000000,
@@ -41,13 +41,13 @@ export const allowdVoters = () => {
             <img src={fileUrl} alt="Voter Image" />
             <div className={Style.voterInfo_paragragh}>
               <p>
-                Name: <span>&nbps;{formInput.name}</span>{" "}
+                Name: <span> &nbps; {formInput.name}</span>
               </p>
               <p>
-                Addr: <span>&nbps;{formInput.address.slice(0, 20)}</span>{" "}
+                Addr: <span>&nbps;{formInput.address.slice(0, 20)}</span>
               </p>
               <p>
-                Pos: <span>&nbps;{formInput.position}</span>{" "}
+                Pos: <span>&nbps;{formInput.position}</span>
               </p>
             </div>
           </div>
@@ -60,12 +60,7 @@ export const allowdVoters = () => {
                 Blockchain-based voting ensures transparency, security, and
                 immutability, making it a reliable choice for modern elections.
               </p>
-              <p className={Style.sideInfo_para}>
-                {" "}
-                Register candidates in a decentralized voting system powered by
-                blockchain, where transparency, security, and trust are built
-                into every vote.{" "}
-              </p>
+              <p className={Style.sideInfo_para}> candidates List </p>
             </div>
             <div className={Style.car}>
               {/* {voterArray.map((el, i) => (
@@ -112,11 +107,39 @@ export const allowdVoters = () => {
           </div>
         </div>
       </div>
+      <div>
+        <div className={Style.input__container}>
+          <Input inputType="text" title="Name" placeholder="Enter Name" />
+          <Input inputType="text" title="Address" placeholder="Enter Address" />
+          <Input
+            inputType="text"
+            title="Position"
+            placeholder="Voter Address"
+            handleChange={(e) =>
+              setFormInput({ ...formInput, address: e.target.value })
+            }
+          />
 
-      <div className={Style.input__container}>
-        <Input/>
+          <div className={Style.Button}>
+            <Button btnName="Authorized Voter" handleClick={() => {}} />
+          </div>
+        </div>
+      </div>
+      {/* //////////////////////////// */}
+      <div className={Style.createVoter}>
+        <div className={Style.createdVoter__info}>
+          <Image src={Image.creator} alt="user Profile" />
+          <p>Notice for User</p>
+          <p>
+            Organizer<span>ox985884...</span>
+          </p>
+          <p>
+            Only organizer of the voting contract can create voting candidate
+            for voting election
+          </p>
+        </div>
       </div>
     </div>
   );
 };
-export default allowdVoters;
+export default allowedVoters;

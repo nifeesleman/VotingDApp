@@ -1,0 +1,52 @@
+.createVoter {
+  width: 95%;
+  margin: 0 auto;
+  margin-block: 2 rem;
+  display: grid;
+  grid-template-columns: 1fr 3fr 1fr;
+  gap: 2rem;
+}
+.voter {
+  background-color: #231e39;
+  border-radius: 25px;
+  box-shadow: 10px 10px 15px rgba(0, 0, 0.35);
+  color: #b3b8cd;
+  padding: 2rem;
+}
+
+.voter__container__box {
+  text-align: center;
+  border: 1px dotted #9a02ac;
+  border-radius: 5px;
+}
+.voter__container__box p {
+  line-height: 0.5s;
+}
+.voterInfo {
+  position: absolute;
+  top: 12rem;
+  left: 3rem;
+  width: 15rem;
+  height: 15rem;
+  padding: 1rem;
+  background-color: #231e39;
+  border-radius: 10px 10px 15px rgba(0, 0, 0, 0.35);
+  color: #b3b8cd;
+  text-align: start;
+}
+/* ------INPUT */
+.input__container {
+  padding-top: 2rem;
+  width: 80%;
+  margin: auto;
+}
+
+.Button {
+  text-align: end;
+}
+@media screen and (max-width: 45em) {
+  .createVoter {
+    width: 90%;
+    grid-template-columns: 1fr;
+  }
+}
