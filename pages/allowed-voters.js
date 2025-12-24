@@ -106,22 +106,26 @@ const allowedVoters = () => {
             </div>
           </div>
         </div>
-      </div>
-      <div>
-        <div className={Style.input__container}>
-          <Input inputType="text" title="Name" placeholder="Enter Name" />
-          <Input inputType="text" title="Address" placeholder="Enter Address" />
-          <Input
-            inputType="text"
-            title="Position"
-            placeholder="Voter Address"
-            handleChange={(e) =>
-              setFormInput({ ...formInput, address: e.target.value })
-            }
-          />
+        <div>
+          <div className={Style.input__container}>
+            <Input inputType="text" title="Name" placeholder="Enter Name" />
+            <Input
+              inputType="text"
+              title="Address"
+              placeholder="Enter Address"
+            />
+            <Input
+              inputType="text"
+              title="Position"
+              placeholder="Voter Address"
+              handleChange={(e) =>
+                setFormInput({ ...formInput, address: e.target.value })
+              }
+            />
 
-          <div className={Style.Button}>
-            <Button btnName="Authorized Voter" handleClick={() => {}} />
+            <div className={Style.Button}>
+              <Button btnName="Authorized Voter" handleClick={() => {}} />
+            </div>
           </div>
         </div>
       </div>
