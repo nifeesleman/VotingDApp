@@ -36,7 +36,7 @@ const allowedVoters = () => {
   return (
     <div className={Style.createVoter}>
       <div>
-        {fileUrl && (
+        {!fileUrl && (
           <div className={Style.voterInfo}>
             <img src={fileUrl} alt="Voter Image" />
             <div className={Style.voterInfo_paragragh}>
@@ -62,7 +62,7 @@ const allowedVoters = () => {
               </p>
               <p className={Style.sideInfo_para}> candidates List </p>
             </div>
-            <div className={Style.car}>
+            <div className={Style.card}>
               {/* {voterArray.map((el, i) => (
                 <div key={i + 1} className={Style.card_box}>
                   <div className={Style.image}>
@@ -92,7 +92,7 @@ const allowedVoters = () => {
                     className={Style.voter__container__box__div__info__image}
                   >
                     <Image
-                      src={Image.creator}
+                      src={Image.Creator}
                       alt="File upload"
                       width={150}
                       height={150}
@@ -130,13 +130,15 @@ const allowedVoters = () => {
         </div>
       </div>
       {/* //////////////////////////// */}
-      <div className={Style.createVoter}>
+      <div className={Style.createdVoter}>
         <div className={Style.createdVoter__info}>
           <Image src={Image.creator} alt="user Profile" />
           <p>Notice for User</p>
+          <br />
           <p>
             Organizer<span>ox985884...</span>
           </p>
+          <br />
           <p>
             Only organizer of the voting contract can create voting candidate
             for voting election
