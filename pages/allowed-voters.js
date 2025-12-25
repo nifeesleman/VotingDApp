@@ -26,6 +26,8 @@ const allowedVoters = () => {
     setFileUrl(url);
   });
 
+  console.log(fileUrl);
+
   const { getRootProps, getInputProps } = useDropzone({
     onDrop,
     accept: "image/*",
@@ -37,7 +39,7 @@ const allowedVoters = () => {
   return (
     <div className={Style.createVoter}>
       <div>
-        {!fileUrl && (
+        {fileUrl && (
           <div className={Style.voterInfo}>
             <img src={fileUrl} alt="Voter Image" />
             <div className={Style.voterInfo_paragragh}>
