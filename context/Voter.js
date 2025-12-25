@@ -7,7 +7,7 @@ import { useRouter } from "next/router";
 //INTERNAL IMPORT
 import { VotingAddress, VotingABI } from "./constants";
 
-const client = ipfsHttpClient("https://ipfs.infura.io:5001/api/v0");
+const client = ipfsHttpClient("https://ipfs.io:5001/api/v0");
 
 const fetchContract = (signerOrProvider) =>
   new ethers.Contract(VotingAddress, VotingABI, signerOrProvider);
