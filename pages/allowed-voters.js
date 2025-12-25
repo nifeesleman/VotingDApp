@@ -5,6 +5,7 @@ import Image from "next/image";
 
 //------INTERNAL IMPORT
 import Style from "../styles/allowedVoters.module.css";
+import images from "../assets";
 import { VoterContext } from "../context/Voter";
 import { Button } from "../components/Button/Button";
 import { Input } from "../components/Input/Input";
@@ -92,7 +93,7 @@ const allowedVoters = () => {
                     className={Style.voter__container__box__div__info__image}
                   >
                     <Image
-                      src={Image.Creator}
+                      src={images.upload}
                       alt="File upload"
                       width={150}
                       height={150}
@@ -132,11 +133,11 @@ const allowedVoters = () => {
       {/* //////////////////////////// */}
       <div className={Style.createdVoter}>
         <div className={Style.createdVoter__info}>
-          <Image src={Image.creator} alt="user Profile" />
+          <Image src={images.creator} alt="user Profile" />
           <p>Notice for User</p>
           <br />
           <p>
-            Organizer<span>ox985884...</span>
+            Organizer <span>ox985884...</span>
           </p>
           <br />
           <p>
