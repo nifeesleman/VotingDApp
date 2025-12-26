@@ -66,6 +66,7 @@ export const VotingProvider = ({ children }) => {
 
   const uploadToIPFS = async (file) => {
     try {
+      // const data = JSON.stringify({ name, address, position,image:fileUrl });
       const added = await client.add({ content: file });
       const url = `https://ipfs.infura.io/ipfs/${added.path}`;
       return url;
