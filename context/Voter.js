@@ -1,13 +1,10 @@
 import React, { useState, useEffect } from "react";
-import Web3modal from "web3modal";
+import Web3Modal from "web3modal";
 import { ethers } from "ethers";
-import { create as ipfsHttpClient } from "ipfs-http-client";
 import { axios } from "axios";
 import { useRouter } from "next/router";
 //INTERNAL IMPORT
 import { VotingAddress, VotingABI } from "./constants";
-
-const client = ipfsHttpClient("https://ipfs.io:5001/api/v0");
 
 const fetchContract = (signerOrProvider) =>
   new ethers.Contract(VotingAddress, VotingABI, signerOrProvider);
@@ -66,13 +63,32 @@ export const VotingProvider = ({ children }) => {
 
   const uploadToIPFS = async (file) => {
     try {
-      const added = await client.add({ content: file });
-      const url = `https://ipfs.infura.io/ipfs/${added.path}`;
-      return url;
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch(process.env.NEXT_PUBLIC_PINATA_POST_URL, {
+        method: "POST",
+        headers: {
+          pinata_api_key: process.env.NEXT_PUBLIC_PINATA_API_KEY,
+          pinata_secret_api_key: process.env.NEXT_PUBLIC_PINATA_SECRECT_KEY,
+        },
+        body: formData,
+      });
+
+      if (!res.ok) {
+        throw new Error("Pinata upload failed");
+      }
+
+      const data = await res.json();
+
+      const fileUrl = `${process.env.NEXT_PUBLIC_PINATA_HASH_URL}${data.IpfsHash}`;
+      return fileUrl;
     } catch (error) {
+      console.error(error);
       setError("An error occurred while uploading to IPFS");
     }
   };
+
   return (
     <VoterContext.Provider
       value={{
