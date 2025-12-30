@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from "react";
 import Web3Modal from "web3modal";
 import { ethers } from "ethers";
-import { axios } from "axios";
+import { BrowserProvider, Contract } from "ethers";
+import { create as createIpfsClient } from "ipfs-http-client";
 import { useRouter } from "next/router";
 //INTERNAL IMPORT
 import { VotingAddress, VotingABI } from "./constants";
+
+// Reuse a single IPFS client instance for metadata uploads
+const client = createIpfsClient({ url: "https://ipfs.infura.io:5001/api/v0" });
 
 const fetchContract = (signerOrProvider) =>
   new ethers.Contract(VotingAddress, VotingABI, signerOrProvider);
@@ -93,6 +97,45 @@ export const VotingProvider = ({ children }) => {
   //----------CREATE VOTER FUNCTION
   const createVoter = async (formInput, fileUrl, router) => {
     try {
+      const web3Modal = new Web3Modal();
+      const connection = await web3Modal.connect();
+
+      const provider = new BrowserProvider(connection);
+      const signer = await provider.getSigner();
+
+      const contract = new Contract(VotingAddress, VotingABI, signer);
+
+      // voter metadata
+      const metadata = {
+        name: formInput.name,
+        address: formInput.address,
+        position: formInput.position,
+        image: fileUrl,
+      };
+
+      // Convert metadata to Blob for Pinata
+      const blob = new Blob([JSON.stringify(metadata)], {
+        type: "application/json",
+      });
+      const formData = new FormData();
+      formData.append("file", blob);
+
+      // Upload JSON to Pinata
+      const res = await fetch(process.env.NEXT_PUBLIC_PINATA_POST_URL, {
+        method: "POST",
+        headers: {
+          pinata_api_key: process.env.NEXT_PUBLIC_PINATA_API_KEY,
+          pinata_secret_api_key: process.env.NEXT_PUBLIC_PINATA_SECRECT_KEY,
+        },
+        body: formData,
+      });
+
+        if (!res.ok) throw new Error("Pinata upload failed");
+
+        const data = await res.json();
+        const metadataUrl = `${process.env.NEXT_PUBLIC_PINATA_HASH_URL}${data.IpfsHash}`;
+
+        console.log("Voter Metadata URL:", metadataUrl);
     } catch (error) {
       console.error(error);
       setError("An error occurred while creating voter");
