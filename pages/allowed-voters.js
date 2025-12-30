@@ -17,7 +17,7 @@ const allowedVoters = () => {
     position: "",
   });
   const router = useRouter();
-  const { uploadToIPFS } = useContext(VoterContext);
+  const { uploadToIPFS, createVoter } = useContext(VoterContext);
 
   //-------VOTERS IMAGE DROP
 
@@ -42,7 +42,7 @@ const allowedVoters = () => {
   return (
     <div className={Style.createVoter}>
       <div>
-    {/* Voter Info and Accept User Info */}
+        {/* Voter Info and Accept User Info */}
         {fileUrl && (
           <div className={Style.voterInfo}>
             <img src={fileUrl} alt="Voter Image" />
@@ -64,12 +64,12 @@ const allowedVoters = () => {
           <div className={Style.sideInfo}>
             <div className={Style.sideInfo_box}>
               <h4>Create candidate For Voting</h4>
-              <br/>
+              <br />
               <p>
                 Blockchain-based voting ensures transparency, security, and
                 immutability, making it a reliable choice for modern elections.
               </p>
-              <br/>
+              <br />
               <p className={Style.sideInfo_para}> candidates List </p>
             </div>
             <div className={Style.card}>
@@ -121,8 +121,7 @@ const allowedVoters = () => {
         <div>
           {/* Inpute event */}
           <div className={Style.input__container}>
-           
-             <Input
+            <Input
               inputType="text"
               title="Name"
               placeholder="Enter Name"
@@ -130,7 +129,7 @@ const allowedVoters = () => {
                 setFormInput({ ...formInput, name: e.target.value })
               }
             />
-             <Input
+            <Input
               inputType="text"
               title="Address"
               placeholder="Voter Addresss"
@@ -148,7 +147,10 @@ const allowedVoters = () => {
             />
 
             <div className={Style.Button}>
-              <Button btnName="Authorized Voter" handleClick={() => {}} />
+              <Button
+                btnName="Authorized Voter"
+                handleClick={() => createVoter(formInput, fileUrl,router)}
+              />
             </div>
           </div>
         </div>

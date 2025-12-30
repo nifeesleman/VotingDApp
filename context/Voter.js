@@ -89,6 +89,16 @@ export const VotingProvider = ({ children }) => {
     }
   };
 
+
+  //----------CREATE VOTER FUNCTION
+  const createVoter = async (formInput, fileUrl, router) => {
+    try {
+    } catch (error) {
+      console.error(error);
+      setError("An error occurred while creating voter");
+    }
+  };
+
   return (
     <VoterContext.Provider
       value={{
@@ -96,6 +106,7 @@ export const VotingProvider = ({ children }) => {
         checkIfWalletConnected,
         connectWallet,
         uploadToIPFS,
+        createVoter,
       }}
     >
       {children}
