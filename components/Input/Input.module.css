@@ -7,7 +7,7 @@
 .input__box input {
   width: 100%;
   background-color: transparent;
-  border: none;
+  border: 0;
   outline: none;
   color: #fff;
   padding-inline: 0.5rem;

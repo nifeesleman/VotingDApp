@@ -39,6 +39,7 @@ const allowedVoters = () => {
   return (
     <div className={Style.createVoter}>
       <div>
+    {/* Voter Info and Accept User Info */}
         {fileUrl && (
           <div className={Style.voterInfo}>
             <img src={fileUrl} alt="Voter Image" />
@@ -47,22 +48,25 @@ const allowedVoters = () => {
                 Name: <span> &nbsp;{formInput.name}</span>
               </p>
               <p>
-                Addr: <span>&nbsp;{formInput.address.slice(0, 20)}...</span>
+                Addr: &nbsp;<span>{formInput.address.slice(0, 20)}...</span>
               </p>
               <p>
-                Pos: <span>&nbsp;{formInput.position}</span>
+                Pos: &nbsp;<span>{formInput.position}</span>
               </p>
             </div>
           </div>
         )}
+        {/* Side info */}
         {!fileUrl && (
           <div className={Style.sideInfo}>
             <div className={Style.sideInfo_box}>
               <h4>Create candidate For Voting</h4>
+              <br/>
               <p>
                 Blockchain-based voting ensures transparency, security, and
                 immutability, making it a reliable choice for modern elections.
               </p>
+              <br/>
               <p className={Style.sideInfo_para}> candidates List </p>
             </div>
             <div className={Style.card}>
@@ -82,6 +86,8 @@ const allowedVoters = () => {
           </div>
         )}
       </div>
+
+      {/* Create New Voter Detail */}
       <div className={Style.voter}>
         <div className={Style.voter__container}>
           <h1>Create New Voter</h1>
@@ -110,19 +116,31 @@ const allowedVoters = () => {
           </div>
         </div>
         <div>
+          {/* Inpute event */}
           <div className={Style.input__container}>
-            <Input inputType="text" title="Name" placeholder="Enter Name" />
-            <Input
+           
+             <Input
+              inputType="text"
+              title="Name"
+              placeholder="Enter Name"
+              handleChange={(e) =>
+                setFormInput({ ...formInput, name: e.target.value })
+              }
+            />
+             <Input
               inputType="text"
               title="Address"
-              placeholder="Enter Address"
+              placeholder="Voter Addresss"
+              handleChange={(e) =>
+                setFormInput({ ...formInput, address: e.target.value })
+              }
             />
             <Input
               inputType="text"
               title="Position"
-              placeholder="Voter Address"
+              placeholder="Voter Position"
               handleChange={(e) =>
-                setFormInput({ ...formInput, address: e.target.value })
+                setFormInput({ ...formInput, position: e.target.value })
               }
             />
 
