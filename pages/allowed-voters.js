@@ -21,10 +21,13 @@ const allowedVoters = () => {
 
   //-------VOTERS IMAGE DROP
 
-  const onDrop = useCallback(async (acceptedFile) => {
-    const url = await uploadToIPFS(acceptedFile[0]);
-    setFileUrl(url);
-  });
+  const onDrop = useCallback(
+    async (acceptedFile) => {
+      const url = await uploadToIPFS(acceptedFile[0]);
+      setFileUrl(url);
+    },
+    [uploadToIPFS]
+  );
 
   console.log(fileUrl);
 
