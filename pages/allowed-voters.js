@@ -29,7 +29,7 @@ const allowedVoters = () => {
     [uploadToIPFS]
   );
 
-  console.log(fileUrl);
+
 
   const { getRootProps, getInputProps } = useDropzone({
     onDrop,
