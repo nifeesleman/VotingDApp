@@ -160,15 +160,16 @@ const getAllVoterData = async() =>{
   const contract = fetchContract(signer);
 
 //VOTER LIST
-const voterListData = await contract.getVoterListData();
-await voterListData.wait();
+const voterListData = await contract.getVoterList();
 setVoterAddress(voterListData);
-voterListData.map(async(el)=>{
+
+  voterListData.map(async(el)=>{
   const singleVoterAddress = await contract.getVoterdata(el);
   pushCandidate.push(singleVoterAddress);
   console.log("singleVoterAddress", singleVoterAddress);
 })
   }
+ console.log("voterAddress", voterAddress);
   useEffect(() => {getAllVoterData()}, []);
 
   return (
