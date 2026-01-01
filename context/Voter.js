@@ -134,19 +134,42 @@ export const VotingProvider = ({ children }) => {
 
       const data = await res.json();
       const metadataUrl = `${process.env.NEXT_PUBLIC_PINATA_HASH_URL}${data.IpfsHash}`;
-      console.log(metadataUrl);
-      const tx = await contract.voterRight(address, name, metadataUrl, fileUrl);
-      await tx.wait();
+      // console.log(metadataUrl);
+      const voter = await contract.voterRight(address, name, metadataUrl, fileUrl);
+      await voter.wait();
+      // console.log("voter", voter);
 
       const redirect = nextRouter || router;
       if (redirect?.push) {
-        redirect.push("/voterList");
+        redirect.push("/");
       }
     } catch (error) {
       console.error(error);
       setError("An error occurred while creating the voter");
     }
   };
+
+  //-----------GET VOTER DATA
+
+const getAllVoterData = async() =>{
+    //SMART CONTRACT CONNECTING
+  const web3Modal = new Web3Modal();
+  const connection = await web3Modal.connect();
+  const provider = new ethers.BrowserProvider(connection);
+  const signer = await provider.getSigner();
+  const contract = fetchContract(signer);
+
+//VOTER LIST
+const voterListData = await contract.getVoterListData();
+await voterListData.wait();
+setVoterAddress(voterListData);
+voterListData.map(async(el)=>{
+  const singleVoterAddress = await contract.getVoterdata(el);
+  pushCandidate.push(singleVoterAddress);
+  console.log("singleVoterAddress", singleVoterAddress);
+})
+  }
+  useEffect(() => {getAllVoterData()}, []);
 
   return (
     <VoterContext.Provider
@@ -156,6 +179,7 @@ export const VotingProvider = ({ children }) => {
         connectWallet,
         uploadToIPFS,
         createVoter,
+        getAllVoterData,
       }}
     >
       {children}

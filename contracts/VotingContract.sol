@@ -38,7 +38,7 @@ contract Create {
     /////////END OF CANDIDATE///////
     //-------VOTER DATA
     address[] public votedVoters;
-    address[] public voterSAddresses;
+    address[] public votersAddresses;
     mapping(address => Voter) public voters;
 
     struct Voter {
@@ -156,7 +156,7 @@ contract Create {
     }
 
     function getVoterLength() public view returns (uint256) {
-        return voterSAddresses.length;
+        return votersAddresses.length;
     }
 
     function getVoterdata(address _address)
@@ -179,6 +179,6 @@ contract Create {
     }
 
     function getVoterList() public view returns (address[] memory) {
-        return voterSAddresses;
+        return votersAddresses;
     }
 }
