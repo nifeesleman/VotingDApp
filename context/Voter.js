@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Web3Modal from "web3modal";
 import { ethers } from "ethers";
-import { BrowserProvider, Contract } from "ethers";
 import { create as createIpfsClient } from "ipfs-http-client";
 import { useRouter } from "next/router";
 //INTERNAL IMPORT
@@ -95,32 +94,31 @@ export const VotingProvider = ({ children }) => {
 
 
   //----------CREATE VOTER FUNCTION
-  const createVoter = async (formInput, fileUrl, router) => {
+  const createVoter = async (formInput, fileUrl, nextRouter) => {
     try {
+      const { name, address, position } = formInput;
+      if (!name || !address || !position || !fileUrl) {
+        return setError("Input data is missing");
+      }
+      if (!ethers.isAddress(address)) {
+        return setError("Enter a valid wallet address");
+      }
+      if (!window.ethereum) {
+        throw new Error("Install MetaMask");
+      }
+
       const web3Modal = new Web3Modal();
       const connection = await web3Modal.connect();
-
-      const provider = new BrowserProvider(connection);
+      const provider = new ethers.BrowserProvider(connection);
       const signer = await provider.getSigner();
+      const contract = fetchContract(signer);
 
-      const contract = new Contract(VotingAddress, VotingABI, signer);
-
-      // voter metadata
-      const metadata = {
-        name: formInput.name,
-        address: formInput.address,
-        position: formInput.position,
-        image: fileUrl,
-      };
-
-      // Convert metadata to Blob for Pinata
-      const blob = new Blob([JSON.stringify(metadata)], {
-        type: "application/json",
-      });
+      // Use the same Pinata flow as image uploads for metadata JSON
+      const metadata = { name, address, position };
+      const blob = new Blob([JSON.stringify(metadata)], { type: "application/json" });
       const formData = new FormData();
-      formData.append("file", blob);
+      formData.append("file", blob, "metadata.json");
 
-      // Upload JSON to Pinata
       const res = await fetch(process.env.NEXT_PUBLIC_PINATA_POST_URL, {
         method: "POST",
         headers: {
@@ -130,15 +128,23 @@ export const VotingProvider = ({ children }) => {
         body: formData,
       });
 
-        if (!res.ok) throw new Error("Pinata upload failed");
+      if (!res.ok) {
+        throw new Error("Pinata upload failed");
+      }
 
-        const data = await res.json();
-        const metadataUrl = `${process.env.NEXT_PUBLIC_PINATA_HASH_URL}${data.IpfsHash}`;
+      const data = await res.json();
+      const metadataUrl = `${process.env.NEXT_PUBLIC_PINATA_HASH_URL}${data.IpfsHash}`;
+      console.log(metadataUrl);
+      const tx = await contract.voterRight(address, name, metadataUrl, fileUrl);
+      await tx.wait();
 
-        console.log("Voter Metadata URL:", metadataUrl);
+      const redirect = nextRouter || router;
+      if (redirect?.push) {
+        redirect.push("/voterList");
+      }
     } catch (error) {
       console.error(error);
-      setError("An error occurred while creating voter");
+      setError("An error occurred while creating the voter");
     }
   };
 
