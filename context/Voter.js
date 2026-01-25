@@ -32,7 +32,6 @@ export const VotingProvider = ({ children }) => {
 
   //--------END CANDIDATE DATA
   const [error, setError] = useState("");
-  const highestVote = [];
 
   //--------VOTER SECTION
   const [voterArray, setVoterArray] = useState([]);
@@ -147,17 +146,24 @@ export const VotingProvider = ({ children }) => {
       const data = await res.json();
       const metadataUrl = `${process.env.NEXT_PUBLIC_PINATA_HASH_URL}${data.IpfsHash}`;
       // console.log(metadataUrl);
+      console.log("Calling voterRight with:", { address, name, metadataUrl, fileUrl });
       const voter = await contract.voterRight(address, name, metadataUrl, fileUrl);
+      console.log("Transaction sent, waiting for confirmation...");
       await voter.wait();
-      // console.log("voter", voter);
+      console.log("Voter created successfully!");
+
+      // Refresh voter data after creation
+      await getAllVoterData();
 
       const redirect = nextRouter || router;
       if (redirect?.push) {
         redirect.push("/");
       }
     } catch (error) {
-      console.error(error);
-      setError("An error occurred while creating the voter");
+      console.error("Error creating voter:", error);
+      const errorMessage = error?.reason || error?.message || "An error occurred while creating the voter";
+      setError(errorMessage);
+      throw error; // Re-throw to allow UI to handle it
     }
   };
 
