@@ -9,26 +9,33 @@ import { VotingAddress, VotingABI } from "./constants";
 // Reuse a single IPFS client instance for metadata uploads
 const client = createIpfsClient({ url: "https://ipfs.infura.io:5001/api/v0" });
 
-const fetchContract = (signerOrProvider) =>
-  new ethers.Contract(VotingAddress, VotingABI, signerOrProvider);
+const fetchContract = (signerOrProvider) => {
+  if (!VotingAddress) {
+    console.error("VotingAddress is undefined. Please check constants.js");
+    throw new Error("Contract address is not configured");
+  }
+  if (!VotingABI || !Array.isArray(VotingABI)) {
+    console.error("VotingABI is invalid. Please check constants.js");
+    throw new Error("Contract ABI is not configured");
+  }
+  const contract = new ethers.Contract(VotingAddress, VotingABI, signerOrProvider);
+  console.log("Connected to contract at:", VotingAddress);
+  return contract;
+};
 export const VoterContext = React.createContext();
 export const VotingProvider = ({ children }) => {
   const VotingTittle = "Decentralized Voting System";
   const router = useRouter();
   const [currentAccount, setCurrentAccount] = useState("");
   const [candidateLength, setCandidateLength] = useState("");
-  const pushCandidate = [];
-  const candidateIndex = [];
-  const [candidateArray, setCandidateArray] = useState(pushCandidate);
+  const [candidateArray, setCandidateArray] = useState([]);
 
   //--------END CANDIDATE DATA
   const [error, setError] = useState("");
   const highestVote = [];
 
   //--------VOTER SECTION
-
-  const pushVoter = [];
-  const [voterArray, setVoterArray] = useState(pushVoter);
+  const [voterArray, setVoterArray] = useState([]);
   const [voterLength, setVoterLength] = useState("");
   const [voterAddress, setVoterAddress] = useState([]);
 
@@ -107,6 +114,11 @@ export const VotingProvider = ({ children }) => {
         throw new Error("Install MetaMask");
       }
 
+      // Validate contract address before connecting
+      if (!VotingAddress) {
+        throw new Error("Contract address is not configured. Please deploy the contract first.");
+      }
+
       const web3Modal = new Web3Modal();
       const connection = await web3Modal.connect();
       const provider = new ethers.BrowserProvider(connection);
@@ -150,27 +162,75 @@ export const VotingProvider = ({ children }) => {
   };
 
   //-----------GET VOTER DATA
+  const getAllVoterData = async () => {
+    try {
+      // Check if wallet is connected
+      if (!window.ethereum) {
+        console.warn("MetaMask is not installed");
+        return;
+      }
 
-const getAllVoterData = async() =>{
-    //SMART CONTRACT CONNECTING
-  const web3Modal = new Web3Modal();
-  const connection = await web3Modal.connect();
-  const provider = new ethers.BrowserProvider(connection);
-  const signer = await provider.getSigner();
-  const contract = fetchContract(signer);
+      // Validate contract address
+      if (!VotingAddress) {
+        console.error("Contract address is not configured");
+        setError("Contract address is not configured. Please deploy the contract first.");
+        return;
+      }
 
-//VOTER LIST
-const voterListData = await contract.getVoterList();
-setVoterAddress(voterListData);
+      // Check if account is connected
+      const accounts = await window.ethereum.request({ method: "eth_accounts" });
+      if (accounts.length === 0) {
+        console.warn("No wallet connected. Skipping voter data fetch.");
+        return;
+      }
 
-  voterListData.map(async(el)=>{
-  const singleVoterAddress = await contract.getVoterdata(el);
-  pushCandidate.push(singleVoterAddress);
-  console.log("singleVoterAddress", singleVoterAddress);
-})
-  }
- console.log("voterAddress", voterAddress);
-  useEffect(() => {getAllVoterData()}, []);
+      // SMART CONTRACT CONNECTING
+      const web3Modal = new Web3Modal();
+      const connection = await web3Modal.connect();
+      const provider = new ethers.BrowserProvider(connection);
+      const signer = await provider.getSigner();
+      const contract = fetchContract(signer);
+
+      // VOTER LIST
+      const voterListData = await contract.getVoterList();
+      setVoterAddress(voterListData);
+
+      // Properly handle async operations with Promise.all
+      const voterPromises = voterListData.map(async (el) => {
+        try {
+          const singleVoterData = await contract.getVoterdata(el);
+          return singleVoterData;
+        } catch (error) {
+          console.error(`Error fetching voter data for ${el}:`, error);
+          return null;
+        }
+      });
+
+      const voterDataArray = await Promise.all(voterPromises);
+      const validVoterData = voterDataArray.filter((data) => data !== null);
+      
+      // Update state properly
+      setVoterArray(validVoterData);
+      setVoterLength(validVoterData.length);
+      
+      console.log("Voter data loaded successfully:", validVoterData.length, "voters");
+    } catch (error) {
+      console.error("Error in getAllVoterData:", error);
+      setError("An error occurred while fetching voter data");
+    }
+  };
+
+  // Check wallet connection on mount and when account changes
+  useEffect(() => {
+    checkIfWalletConnected();
+  }, []);
+
+  // Fetch voter data when wallet is connected
+  useEffect(() => {
+    if (currentAccount) {
+      getAllVoterData();
+    }
+  }, [currentAccount]);
 
   return (
     <VoterContext.Provider
