@@ -1,13 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Web3Modal from "web3modal";
 import { ethers } from "ethers";
-import { create as createIpfsClient } from "ipfs-http-client";
 import { useRouter } from "next/router";
 //INTERNAL IMPORT
 import { VotingAddress, VotingABI } from "./constants";
-
-// Reuse a single IPFS client instance for metadata uploads
-const client = createIpfsClient({ url: "https://ipfs.infura.io:5001/api/v0" });
 
 const fetchContract = (signerOrProvider) => {
   if (!VotingAddress) {
@@ -69,9 +65,20 @@ export const VotingProvider = ({ children }) => {
   };
 
   //----------UPLOAD TO IPFS VOTER IMAGE
-
-  const uploadToIPFS = async (file) => {
+  const uploadToIPFS = useCallback(async (file) => {
     try {
+      if (!file) {
+        throw new Error("No file provided");
+      }
+
+      // Validate environment variables
+      if (!process.env.NEXT_PUBLIC_PINATA_POST_URL || 
+          !process.env.NEXT_PUBLIC_PINATA_API_KEY || 
+          !process.env.NEXT_PUBLIC_PINATA_SECRECT_KEY ||
+          !process.env.NEXT_PUBLIC_PINATA_HASH_URL) {
+        throw new Error("Pinata configuration is missing. Please check your environment variables.");
+      }
+
       const formData = new FormData();
       formData.append("file", file);
 
@@ -85,18 +92,24 @@ export const VotingProvider = ({ children }) => {
       });
 
       if (!res.ok) {
-        throw new Error("Pinata upload failed");
+        const errorText = await res.text();
+        throw new Error(`Pinata upload failed: ${errorText}`);
       }
 
       const data = await res.json();
+      if (!data.IpfsHash) {
+        throw new Error("Invalid response from Pinata: missing IpfsHash");
+      }
 
       const fileUrl = `${process.env.NEXT_PUBLIC_PINATA_HASH_URL}${data.IpfsHash}`;
       return fileUrl;
     } catch (error) {
-      console.error(error);
-      setError("An error occurred while uploading to IPFS");
+      console.error("IPFS upload error:", error);
+      const errorMessage = error?.message || "An error occurred while uploading to IPFS";
+      setError(errorMessage);
+      throw error; // Re-throw to allow UI to handle it
     }
-  };
+  }, []);
 
 
   //----------CREATE VOTER FUNCTION
@@ -168,7 +181,7 @@ export const VotingProvider = ({ children }) => {
   };
 
   //-----------GET VOTER DATA
-  const getAllVoterData = async () => {
+  const getAllVoterData = useCallback(async () => {
     try {
       // Check if wallet is connected
       if (!window.ethereum) {
