@@ -235,9 +235,10 @@ export const VotingProvider = ({ children }) => {
       console.log("Voter data loaded successfully:", validVoterData.length, "voters");
     } catch (error) {
       console.error("Error in getAllVoterData:", error);
-      setError("An error occurred while fetching voter data");
+      const errorMessage = error?.reason || error?.message || "An error occurred while fetching voter data";
+      setError(errorMessage);
     }
-  };
+  }, []);
 
   // Check wallet connection on mount and when account changes
   useEffect(() => {
@@ -249,7 +250,7 @@ export const VotingProvider = ({ children }) => {
     if (currentAccount) {
       getAllVoterData();
     }
-  }, [currentAccount]);
+  }, [currentAccount, getAllVoterData]);
 
   return (
     <VoterContext.Provider
