@@ -137,7 +137,7 @@ contract Create {
         voter.voter_voted = false;
         voter.voter_ipfs = _ipfs;
 
-        voterSAddresses.push(_address);
+        votersAddresses.push(_address);
         emit VoterCreated(
             idNumber, _name, _image, _address, voter.voter_allowed, voter.voter_voted, voter.voter_vote, _ipfs
         );
