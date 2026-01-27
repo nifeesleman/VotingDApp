@@ -5,6 +5,7 @@ A decentralized voting application built on Ethereum blockchain, enabling transp
 ## Overview
 
 VotingDApp is a Web3 voting application that allows an organizer to:
+
 - Register candidates for elections
 - Grant voting rights to eligible voters
 - Enable voters to cast votes securely on the blockchain
@@ -14,6 +15,7 @@ All voting data is stored on the Ethereum blockchain, ensuring transparency and 
 ## Technology Stack
 
 **Frontend:**
+
 - [Next.js](https://nextjs.org/) (v16) - React framework with pages router
 - [React](https://reactjs.org/) (v19) - UI library
 - [CSS Modules](https://github.com/css-modules/css-modules) - Component-scoped styling
@@ -21,11 +23,13 @@ All voting data is stored on the Ethereum blockchain, ensuring transparency and 
 - [ethers.js](https://docs.ethers.org/) (v6) - Ethereum library
 
 **Smart Contracts:**
+
 - [Solidity](https://soliditylang.org/) (v0.8.28) - Smart contract language
 - [Hardhat](https://hardhat.org/) - Ethereum development environment
 - [OpenZeppelin Contracts](https://openzeppelin.com/contracts/) - Secure contract components
 
 **Storage:**
+
 - [Pinata](https://pinata.cloud/) / [IPFS](https://ipfs.io/) - Decentralized file storage for voter/candidate metadata
 
 ## Prerequisites
@@ -37,25 +41,29 @@ All voting data is stored on the Ethereum blockchain, ensuring transparency and 
 ## Installation
 
 1. **Clone the repository:**
+
    ```bash
    git clone https://github.com/nifeesleman/VotingDApp.git
    cd VotingDApp
    ```
 
 2. **Install dependencies:**
+
    ```bash
    npm install
    ```
 
 3. **Create environment file:**
-   
+
    Create a `.env.local` file in the root directory with the following variables:
+
    ```env
    NEXT_PUBLIC_PINATA_POST_URL=https://api.pinata.cloud/pinning/pinFileToIPFS
    NEXT_PUBLIC_PINATA_API_KEY=your_pinata_api_key
    NEXT_PUBLIC_PINATA_SECRECT_KEY=your_pinata_secret_key
    NEXT_PUBLIC_PINATA_HASH_URL=https://gateway.pinata.cloud/ipfs/
    ```
+
    > **Note:** The variable name `NEXT_PUBLIC_PINATA_SECRECT_KEY` uses the spelling as defined in the codebase.
 
 ## Running the Application
@@ -63,15 +71,17 @@ All voting data is stored on the Ethereum blockchain, ensuring transparency and 
 ### Start Local Blockchain
 
 1. **Start Hardhat local node:**
+
    ```bash
    npx hardhat node
    ```
 
 2. **Deploy the smart contract** (in a new terminal):
+
    ```bash
    npx hardhat run scripts/deploy.js --network localhost
    ```
-   
+
    Note the deployed contract address and update `context/constants.js` if needed.
 
 ### Start the Frontend
@@ -102,15 +112,15 @@ The `Create` contract (`contracts/VotingContract.sol`) manages the voting system
 
 ### Main Functions
 
-| Function | Access | Description |
-|----------|--------|-------------|
-| `setCandidate()` | Organizer only | Register a new candidate |
-| `voterRight()` | Organizer only | Grant voting rights to an address |
-| `vote()` | Authorized voters | Cast a vote for a candidate |
-| `getCandidate()` | Public | Get all candidate addresses |
-| `getVoterList()` | Public | Get all voter addresses |
-| `getcandidatedata()` | Public | Get candidate details by address |
-| `getVoterdata()` | Public | Get voter details by address |
+| Function             | Access            | Description                       |
+| -------------------- | ----------------- | --------------------------------- |
+| `setCandidate()`     | Organizer only    | Register a new candidate          |
+| `voterRight()`       | Organizer only    | Grant voting rights to an address |
+| `vote()`             | Authorized voters | Cast a vote for a candidate       |
+| `getCandidate()`     | Public            | Get all candidate addresses       |
+| `getVoterList()`     | Public            | Get all voter addresses           |
+| `getcandidatedata()` | Public            | Get candidate details by address  |
+| `getVoterdata()`     | Public            | Get voter details by address      |
 
 ## Project Structure
 
@@ -171,9 +181,9 @@ module.exports = {
   networks: {
     sepolia: {
       url: "YOUR_RPC_URL",
-      accounts: ["YOUR_PRIVATE_KEY"]
-    }
-  }
+      accounts: ["YOUR_PRIVATE_KEY"],
+    },
+  },
 };
 ```
 

@@ -14,7 +14,11 @@ const fetchContract = (signerOrProvider) => {
     console.error("VotingABI is invalid. Please check constants.js");
     throw new Error("Contract ABI is not configured");
   }
-  const contract = new ethers.Contract(VotingAddress, VotingABI, signerOrProvider);
+  const contract = new ethers.Contract(
+    VotingAddress,
+    VotingABI,
+    signerOrProvider
+  );
   console.log("Connected to contract at:", VotingAddress);
   return contract;
 };
@@ -24,13 +28,15 @@ export const VotingProvider = ({ children }) => {
   const router = useRouter();
   const [currentAccount, setCurrentAccount] = useState("");
   const [candidateLength, setCandidateLength] = useState("");
-  const [candidateArray, setCandidateArray] = useState([]);
+  const pushCandidate = [];
+  const [candidateArray, setCandidateArray] = useState(pushCandidate);
 
   //--------END CANDIDATE DATA
   const [error, setError] = useState("");
 
   //--------VOTER SECTION
-  const [voterArray, setVoterArray] = useState([]);
+  const pushVoter = [];
+  const [voterArray, setVoterArray] = useState(pushVoter);
   const [voterLength, setVoterLength] = useState("");
   const [voterAddress, setVoterAddress] = useState([]);
 
@@ -72,11 +78,15 @@ export const VotingProvider = ({ children }) => {
       }
 
       // Validate environment variables
-      if (!process.env.NEXT_PUBLIC_PINATA_POST_URL || 
-          !process.env.NEXT_PUBLIC_PINATA_API_KEY || 
-          !process.env.NEXT_PUBLIC_PINATA_SECRECT_KEY ||
-          !process.env.NEXT_PUBLIC_PINATA_HASH_URL) {
-        throw new Error("Pinata configuration is missing. Please check your environment variables.");
+      if (
+        !process.env.NEXT_PUBLIC_PINATA_POST_URL ||
+        !process.env.NEXT_PUBLIC_PINATA_API_KEY ||
+        !process.env.NEXT_PUBLIC_PINATA_SECRECT_KEY ||
+        !process.env.NEXT_PUBLIC_PINATA_HASH_URL
+      ) {
+        throw new Error(
+          "Pinata configuration is missing. Please check your environment variables."
+        );
       }
 
       const formData = new FormData();
@@ -105,12 +115,12 @@ export const VotingProvider = ({ children }) => {
       return fileUrl;
     } catch (error) {
       console.error("IPFS upload error:", error);
-      const errorMessage = error?.message || "An error occurred while uploading to IPFS";
+      const errorMessage =
+        error?.message || "An error occurred while uploading to IPFS";
       setError(errorMessage);
       throw error; // Re-throw to allow UI to handle it
     }
   }, []);
-
 
   //----------CREATE VOTER FUNCTION
   const createVoter = async (formInput, fileUrl, nextRouter) => {
@@ -128,7 +138,9 @@ export const VotingProvider = ({ children }) => {
 
       // Validate contract address before connecting
       if (!VotingAddress) {
-        throw new Error("Contract address is not configured. Please deploy the contract first.");
+        throw new Error(
+          "Contract address is not configured. Please deploy the contract first."
+        );
       }
 
       const web3Modal = new Web3Modal();
@@ -139,7 +151,9 @@ export const VotingProvider = ({ children }) => {
 
       // Use the same Pinata flow as image uploads for metadata JSON
       const metadata = { name, address, position };
-      const blob = new Blob([JSON.stringify(metadata)], { type: "application/json" });
+      const blob = new Blob([JSON.stringify(metadata)], {
+        type: "application/json",
+      });
       const formData = new FormData();
       formData.append("file", blob, "metadata.json");
 
@@ -159,8 +173,18 @@ export const VotingProvider = ({ children }) => {
       const data = await res.json();
       const metadataUrl = `${process.env.NEXT_PUBLIC_PINATA_HASH_URL}${data.IpfsHash}`;
       // console.log(metadataUrl);
-      console.log("Calling voterRight with:", { address, name, metadataUrl, fileUrl });
-      const voter = await contract.voterRight(address, name, metadataUrl, fileUrl);
+      console.log("Calling voterRight with:", {
+        address,
+        name,
+        metadataUrl,
+        fileUrl,
+      });
+      const voter = await contract.voterRight(
+        address,
+        name,
+        metadataUrl,
+        fileUrl
+      );
       console.log("Transaction sent, waiting for confirmation...");
       await voter.wait();
       console.log("Voter created successfully!");
@@ -174,7 +198,10 @@ export const VotingProvider = ({ children }) => {
       }
     } catch (error) {
       console.error("Error creating voter:", error);
-      const errorMessage = error?.reason || error?.message || "An error occurred while creating the voter";
+      const errorMessage =
+        error?.reason ||
+        error?.message ||
+        "An error occurred while creating the voter";
       setError(errorMessage);
       throw error; // Re-throw to allow UI to handle it
     }
@@ -192,12 +219,16 @@ export const VotingProvider = ({ children }) => {
       // Validate contract address
       if (!VotingAddress) {
         console.error("Contract address is not configured");
-        setError("Contract address is not configured. Please deploy the contract first.");
+        setError(
+          "Contract address is not configured. Please deploy the contract first."
+        );
         return;
       }
 
       // Check if account is connected
-      const accounts = await window.ethereum.request({ method: "eth_accounts" });
+      const accounts = await window.ethereum.request({
+        method: "eth_accounts",
+      });
       if (accounts.length === 0) {
         console.warn("No wallet connected. Skipping voter data fetch.");
         return;
@@ -214,11 +245,16 @@ export const VotingProvider = ({ children }) => {
       const voterListData = await contract.getVoterList();
       setVoterAddress(voterListData);
 
-     const voterPromises = voterListData.map(async (el) => {
+      const voterPromises = voterListData.map(async (el) => {
         try {
           const singleVoterData = await contract.getVoterdata(el);
+          pushVoter.push(singleVoterData);
+          const voterList = await contract.getVoterLength();
+          setVoterLength(voterList, "voter length");
+
           // Destructure the tuple properly
-          const [voterId, name, image, address, allowed, voted] = singleVoterData;
+          const [voterId, name, image, address, allowed, voted] =
+            singleVoterData;
           return {
             voterId: voterId.toString(),
             name,
@@ -239,13 +275,136 @@ export const VotingProvider = ({ children }) => {
       // Update state properly
       setVoterArray(validVoterData);
       setVoterLength(validVoterData.length);
-      console.log("Voter data loaded successfully:", validVoterData.length, "voters");
+      console.log(
+        "Voter data loaded successfully:",
+        validVoterData.length,
+        "voters"
+      );
     } catch (error) {
       console.error("Error in getAllVoterData:", error);
-      const errorMessage = error?.reason || error?.message || "An error occurred while fetching voter data";
+      const errorMessage =
+        error?.reason ||
+        error?.message ||
+        "An error occurred while fetching voter data";
       setError(errorMessage);
     }
   }, []);
+  //--------GIVE-VOTE
+  const giveVote = async (id) => {
+    try {
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  //---------CANDIDATE SECTION--------
+  const setCandidate = async (candiadateForm, fileUrl, nextRouter) => {
+    try {
+      const { name, address, age } = candiadateForm;
+      if (!name || !address || !age || !fileUrl) {
+        return setError("Input data is missing");
+      }
+      if (!ethers.isAddress(address)) {
+        return setError("Enter a valid wallet address");
+      }
+      if (!window.ethereum) {
+        throw new Error("Install MetaMask");
+      }
+
+      // Validate contract address before connecting
+      if (!VotingAddress) {
+        throw new Error(
+          "Contract address is not configured. Please deploy the contract first."
+        );
+      }
+
+      const web3Modal = new Web3Modal();
+      const connection = await web3Modal.connect();
+      const provider = new ethers.BrowserProvider(connection);
+      const signer = await provider.getSigner();
+      const contract = fetchContract(signer);
+
+      // Use the same Pinata flow as image uploads for metadata JSON
+      const metadata = { name, address, age };
+      const blob = new Blob([JSON.stringify(metadata)], {
+        type: "application/json",
+      });
+      const formData = new FormData();
+      formData.append("file", blob, "metadata.json");
+
+      const res = await fetch(process.env.NEXT_PUBLIC_PINATA_POST_URL, {
+        method: "POST",
+        headers: {
+          pinata_api_key: process.env.NEXT_PUBLIC_PINATA_API_KEY,
+          pinata_secret_api_key: process.env.NEXT_PUBLIC_PINATA_SECRECT_KEY,
+        },
+        body: formData,
+      });
+
+      if (!res.ok) {
+        throw new Error("Pinata upload failed");
+      }
+
+      const data = await res.json();
+      const metadataUrl = `${process.env.NEXT_PUBLIC_PINATA_HASH_URL}${data.IpfsHash}`;
+      // console.log(metadataUrl);
+      console.log("Calling voterRight with:", {
+        address,
+        age,
+        name,
+        metadataUrl,
+        fileUrl,
+      });
+      const voter = await contract.setCandidate(
+        address,
+        age,
+        name,
+        metadataUrl,
+        fileUrl
+      );
+      console.log("Transaction sent, waiting for confirmation...");
+      await voter.wait();
+      console.log("candidate created successfully!");
+
+      const redirect = nextRouter || router;
+      if (redirect?.push) {
+        redirect.push("/");
+      }
+    } catch (error) {
+      console.error("Error creating voter:", error);
+      const errorMessage =
+        error?.reason ||
+        error?.message ||
+        "An error occurred while creating the voter";
+      setError(errorMessage);
+      throw error; // Re-throw to allow UI to handle it
+    }
+  };
+  //---------GET CANDIDATE DATA--------\
+  const getNewCandidate = async () => {
+    try {
+      // CONNECTING SMART CONTRACT
+      const web3Modal = new Web3Modal();
+      const connection = await web3Modal.connect();
+      const provider = new ethers.BrowserProvider(connection);
+      const signer = await provider.getSigner();
+      const contract = fetchContract(signer);
+      //----------ALL CANDIDATE
+      const allCandidate = await contract.getCandidate();
+      console.log(allCandidate);
+      allCandidate.map(async (el) => {
+        const singleCandidateDate = await contract.getCandidatedata(el);
+        pushCandidate.push(singleCandidateDate);
+        candidateIndex.push(singleCandidateDate[2]);
+      });
+
+      //----LENGTH OF THE CANDIDATE
+      const allCandidateLength = await contract.getCandidateLength();
+      setCandidateLength(allCandidateLength);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   // Check wallet connection on mount and when account changes
   useEffect(() => {
@@ -268,6 +427,9 @@ export const VotingProvider = ({ children }) => {
         uploadToIPFS,
         createVoter,
         getAllVoterData,
+        giveVote,
+        setCandidate,
+        getCandidate,
       }}
     >
       {children}

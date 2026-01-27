@@ -9,7 +9,7 @@
 .voter {
   background-color: #231e39;
   border-radius: 25px;
-  box-shadow: 10px 10px 15px rgba(0,0, 0, 0.35);
+  box-shadow: 10px 10px 15px rgba(0, 0, 0, 0.35);
   color: #b3b8cd;
   padding: 2rem;
 }
@@ -99,7 +99,7 @@
 .createdVoter__info {
   background-color: #231e39;
   border-radius: 25px;
-   display: grid;
+  display: grid;
   box-shadow: 10px 10px 15px rgba(0, 0, 0, 0.35);
   color: #b3b8cd;
   padding: 2rem;
@@ -126,8 +126,8 @@
     left: 0rem;
     cursor: pointer;
   }
-  .voterInfo_paragragh{
+  .voterInfo_paragragh {
     font-size: 12px;
-    height:7.5rem;
+    height: 7.5rem;
   }
 }

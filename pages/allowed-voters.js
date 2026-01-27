@@ -29,8 +29,6 @@ const allowedVoters = () => {
     [uploadToIPFS]
   );
 
-
-
   const { getRootProps, getInputProps } = useDropzone({
     onDrop,
     accept: "image/*",
@@ -149,7 +147,7 @@ const allowedVoters = () => {
             <div className={Style.Button}>
               <Button
                 btnName="Authorized Voter"
-                handleClick={() => createVoter(formInput, fileUrl,router)}
+                handleClick={() => createVoter(formInput, fileUrl, router)}
               />
             </div>
           </div>
