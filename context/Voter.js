@@ -429,7 +429,14 @@ export const VotingProvider = ({ children }) => {
         getAllVoterData,
         giveVote,
         setCandidate,
-        getCandidate,
+        getNewCandidate,
+        error,
+        voterArray,
+        voterLength,
+        voterAddress,
+        candidateArray,
+        candidateLength,
+        currentAccount,
       }}
     >
       {children}
