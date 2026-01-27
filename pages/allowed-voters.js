@@ -108,7 +108,7 @@ const allowedVoters = () => {
                       alt="File upload"
                       width={150}
                       height={150}
-                      objectFit="contain"
+                      style={{ objectFit: "contain" }}
                     />
                   </div>
                   <p>Drag & Drop File</p>

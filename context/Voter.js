@@ -214,11 +214,20 @@ export const VotingProvider = ({ children }) => {
       const voterListData = await contract.getVoterList();
       setVoterAddress(voterListData);
 
-      // Properly handle async operations with Promise.all
-      const voterPromises = voterListData.map(async (el) => {
+     const voterPromises = voterListData.map(async (el) => {
         try {
           const singleVoterData = await contract.getVoterdata(el);
-          return singleVoterData;
+          // Destructure the tuple properly
+          const [voterId, name, image, address, allowed, voted] = singleVoterData;
+          return {
+            voterId: voterId.toString(),
+            name,
+            image,
+            address,
+            allowed: allowed.toString(),
+            voted,
+            voterAddress: el, // Keep the original address for reference
+          };
         } catch (error) {
           console.error(`Error fetching voter data for ${el}:`, error);
           return null;
