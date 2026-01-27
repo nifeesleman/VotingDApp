@@ -236,11 +236,9 @@ export const VotingProvider = ({ children }) => {
 
       const voterDataArray = await Promise.all(voterPromises);
       const validVoterData = voterDataArray.filter((data) => data !== null);
-      
       // Update state properly
       setVoterArray(validVoterData);
       setVoterLength(validVoterData.length);
-      
       console.log("Voter data loaded successfully:", validVoterData.length, "voters");
     } catch (error) {
       console.error("Error in getAllVoterData:", error);
