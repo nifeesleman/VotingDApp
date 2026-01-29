@@ -4,22 +4,23 @@ import { useDropzone } from "react-dropzone";
 import Image from "next/image";
 
 //------INTERNAL IMPORT
-import Style from "../styles/allowedVoters.module.css";
+import Style from "../styles/candidateRegistration.module.css";
 import images from "../assets";
 import { VoterContext } from "../context/Voter";
 import { Button } from "../components/Button/Button";
 import { Input } from "../components/Input/Input";
-const allowedVoters = () => {
+
+const CandidateRegistration = () => {
   const [fileUrl, setFileUrl] = useState(null);
   const [formInput, setFormInput] = useState({
     name: "",
     address: "",
-    position: "",
+    age: "",
   });
   const router = useRouter();
-  const { uploadToIPFS, createVoter } = useContext(VoterContext);
+  const { uploadToIPFS, setCandidate } = useContext(VoterContext);
 
-  //-------VOTERS IMAGE DROP
+  //-------CANDIDATE IMAGE DROP
 
   const onDrop = useCallback(
     async (acceptedFile) => {
@@ -40,19 +41,19 @@ const allowedVoters = () => {
   return (
     <div className={Style.createVoter}>
       <div>
-        {/* Voter Info and Accept User Info */}
+        {/* Candidate Info */}
         {fileUrl && (
           <div className={Style.voterInfo}>
-            <img src={fileUrl} alt="Voter Image" />
+            <img src={fileUrl} alt="Candidate Image" />
             <div className={Style.voterInfo_paragragh}>
               <p>
                 Name: <span> &nbsp;{formInput.name}</span>
               </p>
               <p>
-                Addr: &nbsp;<span>{formInput.address.slice(0, 20)}...</span>
+                Addr: &nbsp;<span>{formInput.address ? `${formInput.address.slice(0, 20)}${formInput.address.length > 20 ? "..." : ""}` : ""}</span>
               </p>
               <p>
-                Pos: &nbsp;<span>{formInput.position}</span>
+                Age: &nbsp;<span>{formInput.age}</span>
               </p>
             </div>
           </div>
@@ -68,7 +69,7 @@ const allowedVoters = () => {
                 immutability, making it a reliable choice for modern elections.
               </p>
               <br />
-              <p className={Style.sideInfo_para}> candidates List </p>
+              <p className={Style.sideInfo_para}>Candidates List</p>
             </div>
             <div className={Style.card}>
               {/* {voterArray.map((el, i) => (
@@ -88,10 +89,10 @@ const allowedVoters = () => {
         )}
       </div>
 
-      {/* Create New Voter Detail */}
+      {/* Create New Candidate */}
       <div className={Style.voter}>
         <div className={Style.voter__container}>
-          <h1>Create New Voter</h1>
+          <h1>Register Candidate</h1>
           <div className={Style.voter__container__box}>
             <div className={Style.voter__container__box__div}>
               <div {...getRootProps()}>
@@ -130,24 +131,24 @@ const allowedVoters = () => {
             <Input
               inputType="text"
               title="Address"
-              placeholder="Voter Addresss"
+              placeholder="Candidate Address"
               handleChange={(e) =>
                 setFormInput({ ...formInput, address: e.target.value })
               }
             />
             <Input
               inputType="text"
-              title="Position"
-              placeholder="Voter Position"
+              title="Age"
+              placeholder="Candidate Age"
               handleChange={(e) =>
-                setFormInput({ ...formInput, position: e.target.value })
+                setFormInput({ ...formInput, age: e.target.value })
               }
             />
 
             <div className={Style.Button}>
               <Button
-                btnName="Authorized Voter"
-                handleClick={() => createVoter(formInput, fileUrl, router)}
+                btnName="Register Candidate"
+                handleClick={() => setCandidate(formInput, fileUrl, router)}
               />
             </div>
           </div>
@@ -164,12 +165,12 @@ const allowedVoters = () => {
           </p>
           <br />
           <p>
-            Only organizer of the voting contract can create voting candidate
-            for voting election
+            Only organizer of the voting contract can register candidates for
+            the voting election
           </p>
         </div>
       </div>
     </div>
   );
 };
-export default allowedVoters;
+export default CandidateRegistration;
