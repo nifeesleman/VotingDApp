@@ -12,7 +12,7 @@ import { Input } from "../components/Input/Input";
 
 const CandidateRegistration = () => {
   const [fileUrl, setFileUrl] = useState(null);
-  const [formInput, setFormInput] = useState({
+  const [candiadateForm, seCandiadateForm] = useState({
     name: "",
     address: "",
     age: "",
@@ -47,13 +47,13 @@ const CandidateRegistration = () => {
             <img src={fileUrl} alt="Candidate Image" />
             <div className={Style.voterInfo_paragragh}>
               <p>
-                Name: <span> &nbsp;{formInput.name}</span>
+                Name: <span> &nbsp;{candiadateForm.name}</span>
               </p>
               <p>
-                Addr: &nbsp;<span>{formInput.address ? `${formInput.address.slice(0, 20)}${formInput.address.length > 20 ? "..." : ""}` : ""}</span>
+                Addr: &nbsp;<span>{candiadateForm.address ? `${candiadateForm.address.slice(0, 20)}${candiadateForm.address.length > 20 ? "..." : ""}` : ""}</span>
               </p>
               <p>
-                Age: &nbsp;<span>{formInput.age}</span>
+                Age: &nbsp;<span>{candiadateForm.age}</span>
               </p>
             </div>
           </div>
@@ -125,7 +125,7 @@ const CandidateRegistration = () => {
               title="Name"
               placeholder="Enter Name"
               handleChange={(e) =>
-                setFormInput({ ...formInput, name: e.target.value })
+                setcandiadateForm({ ...candiadateForm, name: e.target.value })
               }
             />
             <Input
@@ -133,7 +133,7 @@ const CandidateRegistration = () => {
               title="Address"
               placeholder="Candidate Address"
               handleChange={(e) =>
-                setFormInput({ ...formInput, address: e.target.value })
+                setcandiadateForm({ ...candiadateForm, address: e.target.value })
               }
             />
             <Input
@@ -141,14 +141,14 @@ const CandidateRegistration = () => {
               title="Age"
               placeholder="Candidate Age"
               handleChange={(e) =>
-                setFormInput({ ...formInput, age: e.target.value })
+                setcandiadateForm({ ...candiadateForm, age: e.target.value })
               }
             />
 
             <div className={Style.Button}>
               <Button
-                btnName="Register Candidate"
-                handleClick={() => setCandidate(formInput, fileUrl, router)}
+                btnName="Create Candidate"
+                handleClick={() => setCandidate(candiadateForm, fileUrl, router)}
               />
             </div>
           </div>
