@@ -124,7 +124,57 @@ export const VotingProvider = ({ children }) => {
       throw error; // Re-throw to allow UI to handle it
     }
   }, []);
+  //----------UPLOAD TO IPFS VOTER IMAGE
+  const uploadToIPFSCandidate = useCallback(async (file) => {
+    try {
+      if (!file) {
+        throw new Error("No file provided");
+      }
 
+      // Validate environment variables
+      if (
+        !process.env.NEXT_PUBLIC_PINATA_POST_URL ||
+        !process.env.NEXT_PUBLIC_PINATA_API_KEY ||
+        !process.env.NEXT_PUBLIC_PINATA_SECRECT_KEY ||
+        !process.env.NEXT_PUBLIC_PINATA_HASH_URL
+      ) {
+        throw new Error(
+          "Pinata configuration is missing. Please check your environment variables."
+        );
+      }
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch(process.env.NEXT_PUBLIC_PINATA_POST_URL, {
+        method: "POST",
+        headers: {
+          pinata_api_key: process.env.NEXT_PUBLIC_PINATA_API_KEY,
+          pinata_secret_api_key: process.env.NEXT_PUBLIC_PINATA_SECRECT_KEY,
+        },
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`Pinata upload failed: ${errorText}`);
+      }
+
+      const data = await res.json();
+      if (!data.IpfsHash) {
+        throw new Error("Invalid response from Pinata: missing IpfsHash");
+      }
+
+      const fileUrl = `${process.env.NEXT_PUBLIC_PINATA_HASH_URL}${data.IpfsHash}`;
+      return fileUrl;
+    } catch (error) {
+      console.error("IPFS upload error:", error);
+      const errorMessage =
+        error?.message || "An error occurred while uploading to IPFS";
+      setError(errorMessage);
+      throw error; // Re-throw to allow UI to handle it
+    }
+  }, []);
   //----------CREATE VOTER FUNCTION
   const createVoter = async (formInput, fileUrl, nextRouter) => {
     try {
@@ -358,7 +408,7 @@ export const VotingProvider = ({ children }) => {
         metadataUrl,
         fileUrl,
       });
-      const voter = await contract.setCandidate(
+      const candidate  = await contract.setCandidate(
         address,
         age,
         name,
@@ -366,7 +416,7 @@ export const VotingProvider = ({ children }) => {
         fileUrl
       );
       console.log("Transaction sent, waiting for confirmation...");
-      await voter.wait();
+      await candidate.wait();
       console.log("candidate created successfully!");
 
       const redirect = nextRouter || router;
@@ -374,11 +424,11 @@ export const VotingProvider = ({ children }) => {
         redirect.push("/");
       }
     } catch (error) {
-      console.error("Error creating voter:", error);
+      console.error("Error creating candidate:", error);
       const errorMessage =
         error?.reason ||
         error?.message ||
-        "An error occurred while creating the voter";
+        "An error occurred while creating the candidate";
       setError(errorMessage);
       throw error; // Re-throw to allow UI to handle it
     }
@@ -386,32 +436,40 @@ export const VotingProvider = ({ children }) => {
   //---------GET CANDIDATE DATA--------\
   const getNewCandidate = async () => {
     try {
-      // CONNECTING SMART CONTRACT
+
       const web3Modal = new Web3Modal();
       const connection = await web3Modal.connect();
       const provider = new ethers.BrowserProvider(connection);
       const signer = await provider.getSigner();
       const contract = fetchContract(signer);
-      //----------ALL CANDIDATE
-      const allCandidate = await contract.getCandidate();
-      console.log(allCandidate);
-      allCandidate.map(async (el) => {
-        const singleCandidateDate = await contract.getCandidatedata(el);
-        pushCandidate.push(singleCandidateDate);
-        candidateIndex.push(singleCandidateDate[2]);
-      });
 
-      //----LENGTH OF THE CANDIDATE
-      const allCandidateLength = await contract.getCandidateLength();
-      setCandidateLength(allCandidateLength);
+      const allCandidate = await contract.getCandidate();
+      console.log("CANDIDATE ADDRESSES", allCandidate);
+        allCandidate.map(async (el) => {
+          const singleCandidateData = await contract.getCandidatedata(el);
+           pushCandidate.push(singleCandidateDate);
+           candidateIndex.push(singleCandidateDate[2].number);
+          console.log("SINGLE CANDIDATE DATA", singleCandidateData);
+        });
+      setCandidateArray(candidateData);
+      setCandidateLength(candidateData.length);
+      console.log("CANDIDATE LENGTH", candidateData.length);
     } catch (error) {
       console.log(error);
+      setError(
+        error?.reason ||
+          error?.message ||
+          "An error occurred while fetching candidates"
+      );
     }
   };
 
   // Check wallet connection on mount and when account changes
   useEffect(() => {
     checkIfWalletConnected();
+  }, []);
+  useEffect(() => {
+    getNewCandidate();
   }, []);
 
   // Fetch voter data when wallet is connected
@@ -428,6 +486,7 @@ export const VotingProvider = ({ children }) => {
         checkIfWalletConnected,
         connectWallet,
         uploadToIPFS,
+        uploadToIPFSCandidate,
         createVoter,
         getAllVoterData,
         giveVote,

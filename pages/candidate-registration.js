@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useContext } from "react";
+import React, { useState, useCallback, useContext, useEffect } from "react";
 import { useRouter } from "next/router";
 import { useDropzone } from "react-dropzone";
 import Image from "next/image";
@@ -18,16 +18,17 @@ const CandidateRegistration = () => {
     age: "",
   });
   const router = useRouter();
-  const { uploadToIPFS, setCandidate } = useContext(VoterContext);
+  const { uploadToIPFSCandidate, setCandidate, voterArray, getNewCandidate } =
+    useContext(VoterContext);
 
   //-------CANDIDATE IMAGE DROP
 
   const onDrop = useCallback(
     async (acceptedFile) => {
-      const url = await uploadToIPFS(acceptedFile[0]);
+      const url = await uploadToIPFSCandidate(acceptedFile[0]);
       setFileUrl(url);
     },
-    [uploadToIPFS]
+    [uploadToIPFSCandidate]
   );
 
   const { getRootProps, getInputProps } = useDropzone({
@@ -35,6 +36,10 @@ const CandidateRegistration = () => {
     accept: "image/*",
     maxSize: 5000000,
   });
+  useEffect(() => {
+    getNewCandidate();
+    console.log("VOTER ARRAY", voterArray);
+  }, []);
 
   //------- JSX PART
 
@@ -79,7 +84,7 @@ const CandidateRegistration = () => {
               <p className={Style.sideInfo_para}>Candidates List</p>
             </div>
             <div className={Style.card}>
-              {/* {voterArray.map((el, i) => (
+              {voterArray.map((el, i) => (
                 <div key={i + 1} className={Style.card_box}>
                   <div className={Style.image}>
                     <img src="" alt="Profile photo" />
@@ -90,7 +95,7 @@ const CandidateRegistration = () => {
                     <p>Details</p>
                   </div>
                 </div>
-              ))} */}
+              ))}
             </div>
           </div>
         )}
