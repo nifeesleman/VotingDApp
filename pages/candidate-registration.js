@@ -12,14 +12,21 @@ import { Input } from "../components/Input/Input";
 
 const CandidateRegistration = () => {
   const [fileUrl, setFileUrl] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [candidateForm, setCandidateForm] = useState({
     name: "",
     address: "",
     age: "",
   });
   const router = useRouter();
-  const { uploadToIPFSCandidate, setCandidate, voterArray, getNewCandidate } =
-    useContext(VoterContext);
+  const {
+    uploadToIPFSCandidate,
+    setCandidate,
+    getNewCandidate,
+    candidateArray,
+    candidateFetchFailed,
+  } = useContext(VoterContext);
+  const [refreshing, setRefreshing] = useState(false);
 
   //-------CANDIDATE IMAGE DROP
 
@@ -36,10 +43,14 @@ const CandidateRegistration = () => {
     accept: "image/*",
     maxSize: 5000000,
   });
-  useEffect(() => {
-    getNewCandidate();
-    console.log("VOTER ARRAY", voterArray);
-  }, []);
+  const handleRefreshCandidates = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await getNewCandidate();
+    } finally {
+      setRefreshing(false);
+    }
+  }, [getNewCandidate]);
 
   //------- JSX PART
 
@@ -84,18 +95,79 @@ const CandidateRegistration = () => {
               <p className={Style.sideInfo_para}>Candidates List</p>
             </div>
             <div className={Style.card}>
-              {voterArray.map((el, i) => (
-                <div key={i + 1} className={Style.card_box}>
-                  <div className={Style.image}>
-                    <img src="" alt="Profile photo" />
-                  </div>
-                  <div className={Style.card_info}>
-                    <p>Name</p>
-                    <p>Address</p>
-                    <p>Details</p>
-                  </div>
+              {candidateArray?.length > 0 ? (
+                candidateArray
+                  .filter((el) => el != null)
+                  .map((el, i) => {
+                    // getcandidatedata returns: age(0), name(1), candidateId(2), image(3), voteCount(4), ipfs(5), address(6)
+                    const name = (el[1] ?? el.name ?? "").toString();
+                    const rawId = el[2] ?? el.candidateId;
+                    const candidateId =
+                      typeof rawId === "bigint"
+                        ? Number(rawId)
+                        : rawId != null
+                          ? String(rawId)
+                          : "";
+                    const imageUrl = (el[3] ?? el.image ?? "").toString();
+                    const age = (el[0] ?? el.age ?? "").toString();
+                    const rawAddr = el[6] ?? el._address ?? el.address;
+                    const addr =
+                      typeof rawAddr === "string"
+                        ? rawAddr
+                        : rawAddr != null
+                          ? String(rawAddr)
+                          : "";
+                    const displayAddr =
+                      addr.length > 14
+                        ? `${addr.slice(0, 8)}...${addr.slice(-6)}`
+                        : addr;
+                    return (
+                      <div
+                        key={addr ? `${addr}-${i}` : `candidate-${i}`}
+                        className={Style.card_box}
+                      >
+                        <div className={Style.image}>
+                          <img
+                            src={imageUrl || "/file.svg"}
+                            alt={name ? `${name} profile` : "Candidate"}
+                            onError={(e) => {
+                              const img = e.currentTarget;
+                              if (img && img.src !== "/file.svg") img.src = "/file.svg";
+                            }}
+                          />
+                        </div>
+                        <div className={Style.card_info}>
+                          <p>{name ? `${name} #${candidateId}` : `#${candidateId}`}</p>
+                          <p>{age ? `Age: ${age}` : ""}</p>
+                          <p>{displayAddr ? `Address: ${displayAddr}` : ""}</p>
+                        </div>
+                      </div>
+                    );
+                  })
+              ) : candidateFetchFailed ? (
+                <div className={Style.card_info}>
+                  <p className={Style.sideInfo_para}>
+                    Could not load candidates. Update <code>VotingAddress</code> in{" "}
+                    <code>context/constants.js</code> to your deployed contract address.
+                  </p>
+                  <p style={{ fontSize: "0.85rem", marginTop: "0.5rem" }}>
+                    In a terminal: <code>npx hardhat run scripts/deploy.js --network localhost</code>{" "}
+                    then copy the printed address into constants.js.
+                  </p>
+                  <Button
+                    btnName={refreshing ? "Refreshing…" : "Refresh list"}
+                    handleClick={handleRefreshCandidates}
+                  />
                 </div>
-              ))}
+              ) : (
+                <div style={{ marginTop: "0.5rem" }}>
+                  <p className={Style.sideInfo_para}>No candidates registered yet.</p>
+                  <Button
+                    btnName={refreshing ? "Refreshing…" : "Refresh list"}
+                    handleClick={handleRefreshCandidates}
+                  />
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -159,8 +231,19 @@ const CandidateRegistration = () => {
 
             <div className={Style.Button}>
               <Button
-                btnName="Authorized Candidate"
-                handleClick={() => setCandidate(candidateForm, fileUrl, router)}
+                btnName={isSubmitting ? "Registering…" : "Register Candidate"}
+                handleClick={async () => {
+                  if (isSubmitting) return;
+                  setIsSubmitting(true);
+                  try {
+                    await setCandidate(candidateForm, fileUrl, router, () => {
+                      setCandidateForm({ name: "", address: "", age: "" });
+                      setFileUrl(null);
+                    });
+                  } finally {
+                    setIsSubmitting(false);
+                  }
+                }}
               />
             </div>
           </div>
@@ -179,6 +262,10 @@ const CandidateRegistration = () => {
           <p>
             Only organizer of the voting contract can register candidates for
             the voting election
+          </p>
+          <br />
+          <p style={{ fontSize: "0.85rem", opacity: 0.9 }}>
+            <strong>Nonce error?</strong> If transactions fail (e.g. &quot;nonce too low&quot; or &quot;replacement fee too low&quot;), reset MetaMask for this network: MetaMask → Settings → Advanced → Reset account.
           </p>
         </div>
       </div>
