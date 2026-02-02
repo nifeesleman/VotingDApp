@@ -92,7 +92,7 @@ const CandidateRegistration = () => {
       {/* Create New Candidate */}
       <div className={Style.voter}>
         <div className={Style.voter__container}>
-          <h1>Register Candidate</h1>
+          <h1>Create New Candidate</h1>
           <div className={Style.voter__container__box}>
             <div className={Style.voter__container__box__div}>
               <div {...getRootProps()}>
@@ -147,7 +147,7 @@ const CandidateRegistration = () => {
 
             <div className={Style.Button}>
               <Button
-                btnName="Create Candidate"
+                btnName="Authorized Candidate"
                 handleClick={() => setCandidate(candiadateForm, fileUrl, router)}
               />
             </div>

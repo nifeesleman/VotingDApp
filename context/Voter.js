@@ -26,9 +26,11 @@ export const VoterContext = React.createContext();
 export const VotingProvider = ({ children }) => {
   const VotingTittle = "Decentralized Voting System";
   const router = useRouter();
+  //--------CANDIDATE SECTION
   const [currentAccount, setCurrentAccount] = useState("");
   const [candidateLength, setCandidateLength] = useState("");
   const pushCandidate = [];
+  const candidateIndex = [];
   const [candidateArray, setCandidateArray] = useState(pushCandidate);
 
   //--------END CANDIDATE DATA
@@ -36,6 +38,7 @@ export const VotingProvider = ({ children }) => {
 
   //--------VOTER SECTION
   const pushVoter = [];
+  const voterIndex = [];
   const [voterArray, setVoterArray] = useState(pushVoter);
   const [voterLength, setVoterLength] = useState("");
   const [voterAddress, setVoterAddress] = useState([]);
