@@ -5,6 +5,22 @@ import { useRouter } from "next/router";
 //INTERNAL IMPORT
 import { VotingAddress, VotingABI } from "./constants";
 
+// Convert File/Blob to base64 for /api/pinata (avoids CORS by proxying through our server)
+const fileToBase64 = (file) =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => {
+      const dataUrl = reader.result;
+      const base64 =
+        typeof dataUrl === "string" && dataUrl.includes(",")
+          ? dataUrl.split(",")[1]
+          : dataUrl;
+      resolve(base64);
+    };
+    reader.onerror = reject;
+  });
+
 const fetchContract = (signerOrProvider) => {
   if (!VotingAddress) {
     console.error("VotingAddress is undefined. Please check constants.js");
@@ -32,6 +48,7 @@ export const VotingProvider = ({ children }) => {
   const pushCandidate = [];
   const candidateIndex = [];
   const [candidateArray, setCandidateArray] = useState(pushCandidate);
+  const [candidateFetchFailed, setCandidateFetchFailed] = useState(false);
 
   //--------END CANDIDATE DATA
   const [error, setError] = useState("");
@@ -73,48 +90,29 @@ export const VotingProvider = ({ children }) => {
     }
   };
 
-  //----------UPLOAD TO IPFS VOTER IMAGE
+  //----------UPLOAD TO IPFS VOTER IMAGE (via /api/pinata to avoid CORS)
   const uploadToIPFS = useCallback(async (file) => {
     try {
       if (!file) {
         throw new Error("No file provided");
       }
-
-      // Validate environment variables
-      if (
-        !process.env.NEXT_PUBLIC_PINATA_POST_URL ||
-        !process.env.NEXT_PUBLIC_PINATA_API_KEY ||
-        !process.env.NEXT_PUBLIC_PINATA_SECRECT_KEY ||
-        !process.env.NEXT_PUBLIC_PINATA_HASH_URL
-      ) {
-        throw new Error(
-          "Pinata configuration is missing. Please check your environment variables."
-        );
-      }
-
-      const formData = new FormData();
-      formData.append("file", file);
-
-      const res = await fetch(process.env.NEXT_PUBLIC_PINATA_POST_URL, {
+      const base64 = await fileToBase64(file);
+      const res = await fetch("/api/pinata", {
         method: "POST",
-        headers: {
-          pinata_api_key: process.env.NEXT_PUBLIC_PINATA_API_KEY,
-          pinata_secret_api_key: process.env.NEXT_PUBLIC_PINATA_SECRECT_KEY,
-        },
-        body: formData,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          file: base64,
+          filename: file.name || "file",
+        }),
       });
-
-      if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(`Pinata upload failed: ${errorText}`);
-      }
-
       const data = await res.json();
-      if (!data.IpfsHash) {
-        throw new Error("Invalid response from Pinata: missing IpfsHash");
+      if (!res.ok) {
+        throw new Error(data.error || `Upload failed: ${res.status}`);
       }
-
-      const fileUrl = `${process.env.NEXT_PUBLIC_PINATA_HASH_URL}${data.IpfsHash}`;
+      const fileUrl = data.url || (data.IpfsHash && `${process.env.NEXT_PUBLIC_PINATA_HASH_URL || "https://gateway.pinata.cloud/ipfs/"}${data.IpfsHash}`);
+      if (!fileUrl) {
+        throw new Error("Invalid response from Pinata: missing url/IpfsHash");
+      }
       return fileUrl;
     } catch (error) {
       console.error("IPFS upload error:", error);
@@ -124,48 +122,29 @@ export const VotingProvider = ({ children }) => {
       throw error; // Re-throw to allow UI to handle it
     }
   }, []);
-  //----------UPLOAD TO IPFS VOTER IMAGE
+  //----------UPLOAD TO IPFS CANDIDATE IMAGE (via /api/pinata to avoid CORS)
   const uploadToIPFSCandidate = useCallback(async (file) => {
     try {
       if (!file) {
         throw new Error("No file provided");
       }
-
-      // Validate environment variables
-      if (
-        !process.env.NEXT_PUBLIC_PINATA_POST_URL ||
-        !process.env.NEXT_PUBLIC_PINATA_API_KEY ||
-        !process.env.NEXT_PUBLIC_PINATA_SECRECT_KEY ||
-        !process.env.NEXT_PUBLIC_PINATA_HASH_URL
-      ) {
-        throw new Error(
-          "Pinata configuration is missing. Please check your environment variables."
-        );
-      }
-
-      const formData = new FormData();
-      formData.append("file", file);
-
-      const res = await fetch(process.env.NEXT_PUBLIC_PINATA_POST_URL, {
+      const base64 = await fileToBase64(file);
+      const res = await fetch("/api/pinata", {
         method: "POST",
-        headers: {
-          pinata_api_key: process.env.NEXT_PUBLIC_PINATA_API_KEY,
-          pinata_secret_api_key: process.env.NEXT_PUBLIC_PINATA_SECRECT_KEY,
-        },
-        body: formData,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          file: base64,
+          filename: file.name || "file",
+        }),
       });
-
-      if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(`Pinata upload failed: ${errorText}`);
-      }
-
       const data = await res.json();
-      if (!data.IpfsHash) {
-        throw new Error("Invalid response from Pinata: missing IpfsHash");
+      if (!res.ok) {
+        throw new Error(data.error || `Upload failed: ${res.status}`);
       }
-
-      const fileUrl = `${process.env.NEXT_PUBLIC_PINATA_HASH_URL}${data.IpfsHash}`;
+      const fileUrl = data.url || (data.IpfsHash && `${process.env.NEXT_PUBLIC_PINATA_HASH_URL || "https://gateway.pinata.cloud/ipfs/"}${data.IpfsHash}`);
+      if (!fileUrl) {
+        throw new Error("Invalid response from Pinata: missing url/IpfsHash");
+      }
       return fileUrl;
     } catch (error) {
       console.error("IPFS upload error:", error);
@@ -294,8 +273,31 @@ export const VotingProvider = ({ children }) => {
       const signer = await provider.getSigner();
       const contract = fetchContract(signer);
 
-      // VOTER LIST
-      const voterListData = await contract.getVoterList();
+      // VOTER LIST - handle wrong contract / not deployed (BAD_DATA, unrecognized selector)
+      let voterListData;
+      try {
+        voterListData = await contract.getVoterList();
+      } catch (callError) {
+        const code = callError?.code ?? callError?.info?.error?.code;
+        const isBadContract =
+          code === "BAD_DATA" ||
+          code === "CALL_EXCEPTION" ||
+          (callError?.message && callError.message.includes("unrecognized-selector"));
+        if (isBadContract) {
+          console.warn(
+            "Contract at address does not support getVoterList. Redeploy the Create contract and set VotingAddress to the new address."
+          );
+          setVoterAddress([]);
+          setVoterArray([]);
+          setVoterLength(0);
+          setError(
+            "Contract not found or wrong contract at this address. Redeploy with: npx hardhat run scripts/deploy.js --network localhost"
+          );
+          return;
+        }
+        throw callError;
+      }
+
       setVoterAddress(voterListData);
 
       const voterPromises = voterListData.map(async (el) => {
@@ -351,7 +353,7 @@ export const VotingProvider = ({ children }) => {
   };
 
   //---------CANDIDATE SECTION--------
-  const setCandidate = async (candiadateForm, fileUrl, nextRouter) => {
+  const setCandidate = async (candiadateForm, fileUrl, nextRouter, onSuccess) => {
     try {
       const { name, address, age } = candiadateForm;
       if (!name || !address || !age || !fileUrl) {
@@ -377,52 +379,61 @@ export const VotingProvider = ({ children }) => {
       const signer = await provider.getSigner();
       const contract = fetchContract(signer);
 
-      // Use the same Pinata flow as image uploads for metadata JSON
-      const metadata = { name, address, age };
-      const blob = new Blob([JSON.stringify(metadata)], {
-        type: "application/json",
-      });
-      const formData = new FormData();
-      formData.append("file", blob, "metadata.json");
+      // Upload metadata via /api/pinata (avoids CORS) or use placeholder if not configured
+      let metadataUrl;
+      const pinataKey = process.env.NEXT_PUBLIC_PINATA_API_KEY;
+      const pinataSecret = process.env.NEXT_PUBLIC_PINATA_SECRECT_KEY;
 
-      const res = await fetch(process.env.NEXT_PUBLIC_PINATA_POST_URL, {
-        method: "POST",
-        headers: {
-          pinata_api_key: process.env.NEXT_PUBLIC_PINATA_API_KEY,
-          pinata_secret_api_key: process.env.NEXT_PUBLIC_PINATA_SECRECT_KEY,
-        },
-        body: formData,
-      });
+      if (pinataKey && pinataSecret) {
+        const metadata = { name, address, age };
+        const json = JSON.stringify(metadata);
+        const base64 = btoa(unescape(encodeURIComponent(json)));
 
-      if (!res.ok) {
-        throw new Error("Pinata upload failed");
+        const res = await fetch("/api/pinata", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ file: base64, filename: "metadata.json" }),
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || `Pinata upload failed: ${res.status}`);
+        }
+        metadataUrl = data.url || (data.IpfsHash && `${process.env.NEXT_PUBLIC_PINATA_HASH_URL || "https://gateway.pinata.cloud/ipfs/"}${data.IpfsHash}`);
+        if (!metadataUrl) {
+          throw new Error("Invalid response from Pinata: missing url/IpfsHash");
+        }
+      } else {
+        // Local dev fallback: use data URL so registration works without Pinata
+        const metadata = { name, address, age };
+        const json = JSON.stringify(metadata);
+        metadataUrl = "data:application/json," + encodeURIComponent(json);
+        console.warn(
+          "Pinata not configured (missing PINATA_API_KEY / PINATA_SECRET_KEY in .env). Using data URL for metadata."
+        );
       }
-
-      const data = await res.json();
-      const metadataUrl = `${process.env.NEXT_PUBLIC_PINATA_HASH_URL}${data.IpfsHash}`;
-      // console.log(metadataUrl);
-      console.log("Calling voterRight with:", {
+      console.log("Calling setCandidate with:", {
         address,
         age,
         name,
-        metadataUrl,
-        fileUrl,
+        metadataUrl: metadataUrl?.slice(0, 50) + "...",
+        fileUrl: fileUrl?.slice(0, 50) + "...",
       });
-      const candidate  = await contract.setCandidate(
+      // Contract: setCandidate(address, age, name, image, ipfs) — image = photo URL, ipfs = metadata URL
+      const candidate = await contract.setCandidate(
         address,
         age,
         name,
-        metadataUrl,
-        fileUrl
+        fileUrl,
+        metadataUrl
       );
       console.log("Transaction sent, waiting for confirmation...");
       await candidate.wait();
       console.log("candidate created successfully!");
 
-      const redirect = nextRouter || router;
-      if (redirect?.push) {
-        redirect.push("/");
-      }
+      // Refresh candidate list so the new candidate appears; stay on page so user sees it
+      await getNewCandidate();
+      if (typeof onSuccess === "function") onSuccess();
     } catch (error) {
       console.error("Error creating candidate:", error);
       const errorMessage =
@@ -434,35 +445,57 @@ export const VotingProvider = ({ children }) => {
     }
   };
   //---------GET CANDIDATE DATA--------\
-  const getNewCandidate = async () => {
+  const getNewCandidate = useCallback(async () => {
     try {
-
+      if (!window.ethereum || !VotingAddress) {
+        setCandidateFetchFailed(false);
+        return;
+      }
+      setCandidateFetchFailed(false);
       const web3Modal = new Web3Modal();
       const connection = await web3Modal.connect();
       const provider = new ethers.BrowserProvider(connection);
       const signer = await provider.getSigner();
       const contract = fetchContract(signer);
 
-      const allCandidate = await contract.getCandidate();
-      console.log("CANDIDATE ADDRESSES", allCandidate);
-        allCandidate.map(async (el) => {
-          const singleCandidateData = await contract.getCandidatedata(el);
-           pushCandidate.push(singleCandidateDate);
-           candidateIndex.push(singleCandidateDate[2].number);
-          console.log("SINGLE CANDIDATE DATA", singleCandidateData);
-        });
+      // Handle wrong contract / not deployed (BAD_DATA, decode errors, etc.)
+      let allCandidate;
+      try {
+        allCandidate = await contract.getCandidate();
+      } catch (callError) {
+        console.warn(
+          "getCandidate failed:",
+          callError?.message ?? callError?.shortMessage ?? callError
+        );
+        setCandidateArray([]);
+        setCandidateLength(0);
+        setCandidateFetchFailed(true);
+        return;
+      }
+
+      if (!allCandidate || allCandidate.length === 0) {
+        setCandidateArray([]);
+        setCandidateLength(0);
+        return;
+      }
+      const candidatePromises = allCandidate.map(async (address) => {
+        const data = await contract.getcandidatedata(address);
+        return data;
+      });
+      const candidateData = await Promise.all(candidatePromises);
       setCandidateArray(candidateData);
       setCandidateLength(candidateData.length);
       console.log("CANDIDATE LENGTH", candidateData.length);
     } catch (error) {
       console.log(error);
+      setCandidateFetchFailed(true);
       setError(
         error?.reason ||
           error?.message ||
           "An error occurred while fetching candidates"
       );
     }
-  };
+  }, []);
 
   // Check wallet connection on mount and when account changes
   useEffect(() => {
@@ -470,7 +503,7 @@ export const VotingProvider = ({ children }) => {
   }, []);
   useEffect(() => {
     getNewCandidate();
-  }, []);
+  }, [getNewCandidate]);
 
   // Fetch voter data when wallet is connected
   useEffect(() => {
@@ -498,6 +531,7 @@ export const VotingProvider = ({ children }) => {
         voterAddress,
         candidateArray,
         candidateLength,
+        candidateFetchFailed,
         currentAccount,
       }}
     >
