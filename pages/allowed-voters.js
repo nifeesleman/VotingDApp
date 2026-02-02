@@ -11,13 +11,29 @@ import { Button } from "../components/Button/Button";
 import { Input } from "../components/Input/Input";
 const allowedVoters = () => {
   const [fileUrl, setFileUrl] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
   const [formInput, setFormInput] = useState({
     name: "",
     address: "",
     position: "",
   });
   const router = useRouter();
-  const { uploadToIPFS, createVoter } = useContext(VoterContext);
+  const {
+    uploadToIPFS,
+    createVoter,
+    getAllVoterData,
+    voterArray,
+    voterFetchFailed,
+  } = useContext(VoterContext);
+
+  const handleRefreshVoters = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await getAllVoterData();
+    } finally {
+      setRefreshing(false);
+    }
+  }, [getAllVoterData]);
 
   //-------VOTERS IMAGE DROP
 
@@ -68,21 +84,87 @@ const allowedVoters = () => {
                 immutability, making it a reliable choice for modern elections.
               </p>
               <br />
-              <p className={Style.sideInfo_para}> candidates List </p>
+              <p className={Style.sideInfo_para}>Allowed Voters List</p>
             </div>
             <div className={Style.card}>
-              {/* {voterArray.map((el, i) => (
-                <div key={i + 1} className={Style.card_box}>
-                  <div className={Style.image}>
-                    <img src="" alt="Profile photo" />
-                  </div>
-                  <div className={Style.card_info}>
-                    <p>Name</p>
-                    <p>Address</p>
-                    <p>Details</p>
-                  </div>
+              {voterArray?.length > 0 ? (
+                voterArray
+                  .filter((el) => el != null)
+                  .map((el, i) => {
+                    const name = (el.name ?? "").toString();
+                    const voterId = (el.voterId ?? "").toString();
+                    let imageUrl = (el.image ?? "").toString();
+                    if (
+                      !imageUrl ||
+                      imageUrl.startsWith("data:application/json") ||
+                      imageUrl.includes("metadata.json") ||
+                      imageUrl.endsWith(".json")
+                    ) {
+                      imageUrl = "";
+                    }
+                    const addr =
+                      typeof el.voterAddress === "string"
+                        ? el.voterAddress
+                        : (el.address ?? el.voterAddress ?? "").toString();
+                    const displayAddr =
+                      addr.length > 14
+                        ? `${addr.slice(0, 8)}...${addr.slice(-6)}`
+                        : addr;
+                    const allowed = el.allowed != null ? String(el.allowed) : "";
+                    const voted = el.voted === true ? "Voted" : "Not voted";
+                    return (
+                      <div
+                        key={addr ? `${addr}-${i}` : `voter-${i}`}
+                        className={Style.card_box}
+                      >
+                        <div className={Style.image}>
+                          <img
+                            src={imageUrl || "/file.svg"}
+                            alt={name ? `${name} profile` : "Voter"}
+                            onError={(e) => {
+                              const img = e.currentTarget;
+                              if (img && img.src !== "/file.svg")
+                                img.src = "/file.svg";
+                            }}
+                          />
+                        </div>
+                        <div className={Style.card_info}>
+                          <p>{name ? `${name} #${voterId}` : `#${voterId}`}</p>
+                          <p>{displayAddr ? `Address: ${displayAddr}` : ""}</p>
+                          <p>{allowed ? `Allowed: ${allowed}` : ""}</p>
+                          <p>{voted}</p>
+                        </div>
+                      </div>
+                    );
+                  })
+              ) : voterFetchFailed ? (
+                <div className={Style.card_info}>
+                  <p className={Style.sideInfo_para}>
+                    Could not load voters. Update <code>VotingAddress</code> in{" "}
+                    <code>context/constants.js</code> to your deployed contract
+                    address.
+                  </p>
+                  <p style={{ fontSize: "0.85rem", marginTop: "0.5rem" }}>
+                    In a terminal:{" "}
+                    <code>npx hardhat run scripts/deploy.js --network localhost</code>{" "}
+                    then copy the printed address into constants.js.
+                  </p>
+                  <Button
+                    btnName={refreshing ? "Refreshing…" : "Refresh list"}
+                    handleClick={handleRefreshVoters}
+                  />
                 </div>
-              ))} */}
+              ) : (
+                <div style={{ marginTop: "0.5rem" }}>
+                  <p className={Style.sideInfo_para}>
+                    No voters authorized yet.
+                  </p>
+                  <Button
+                    btnName={refreshing ? "Refreshing…" : "Refresh list"}
+                    handleClick={handleRefreshVoters}
+                  />
+                </div>
+              )}
             </div>
           </div>
         )}
