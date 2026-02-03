@@ -14,7 +14,10 @@ export default function Card({ candidateArray, giveVote, totalVoted, currentAcco
   return (
     <div className={Style.cardWrap}>
       {totalVoted != null && (
-        <p className={Style.totalVoted}>Total voted in election: {totalVoted}</p>
+        <div className={Style.totalVotedWrap}>
+          <span className={Style.totalVotedLabel}>Total voted in election</span>
+          <span className={Style.totalVotedCount}>{totalVoted}</span>
+        </div>
       )}
       <div className={Style.grid}>
         {candidateArray
@@ -57,10 +60,26 @@ export default function Card({ candidateArray, giveVote, totalVoted, currentAcco
                   />
                 </div>
                 <div className={Style.info}>
-                  <p>{name ? `${name} #${candidateId}` : `#${candidateId}`}</p>
-                  <p>{age ? `Age: ${age}` : ""}</p>
-                  <p>{displayAddr ? `Address: ${displayAddr}` : ""}</p>
-                  <p className={Style.voteCount}>Votes: {voteCount}</p>
+                  <div className={Style.cardHeader}>
+                    <h3 className={Style.candidateName}>{name || "Candidate"}</h3>
+                    <span className={Style.candidateId}>#{candidateId}</span>
+                  </div>
+                  {age && (
+                    <div className={Style.infoRow}>
+                      <span className={Style.infoLabel}>Age</span>
+                      <span className={Style.infoValue}>{age}</span>
+                    </div>
+                  )}
+                  {displayAddr && (
+                    <div className={Style.infoRow}>
+                      <span className={Style.infoLabel}>Address</span>
+                      <span className={Style.infoValue} title={addr}>{displayAddr}</span>
+                    </div>
+                  )}
+                  <div className={Style.voteCountWrap}>
+                    <span className={Style.voteCountLabel}>Total Votes:</span>
+                    <span className={Style.voteCountBadge}>{voteCount}</span>
+                  </div>
                   {giveVote && (
                     <Button
                       btnName={
