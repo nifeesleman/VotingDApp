@@ -2,7 +2,7 @@ import React from "react";
 import Style from "./Card.module.css";
 import { Button } from "../Button/Button";
 
-export default function Card({ candidateArray, giveVote }) {
+export default function Card({ candidateArray, giveVote, totalVoted, currentAccount, voterVoted, voterAllowed }) {
   if (!candidateArray?.length) {
     return (
       <div className={Style.cardWrap}>
@@ -13,6 +13,9 @@ export default function Card({ candidateArray, giveVote }) {
 
   return (
     <div className={Style.cardWrap}>
+      {totalVoted != null && (
+        <p className={Style.totalVoted}>Total voted in election: {totalVoted}</p>
+      )}
       <div className={Style.grid}>
         {candidateArray
           .filter((el) => el != null)
@@ -23,10 +26,12 @@ export default function Card({ candidateArray, giveVote }) {
               typeof rawId === "bigint"
                 ? Number(rawId)
                 : rawId != null
-                  ? String(rawId)
-                  : "";
+                  ? Number(rawId)
+                  : 0;
             const imageUrl = (el[3] ?? el.image ?? "").toString();
             const age = (el[0] ?? el.age ?? "").toString();
+            const rawVoteCount = el[4] ?? el.voteCount ?? 0;
+            const voteCount = typeof rawVoteCount === "bigint" ? Number(rawVoteCount) : Number(rawVoteCount) || 0;
             const rawAddr = el[6] ?? el._address ?? el.address;
             const addr =
               typeof rawAddr === "string"
@@ -38,6 +43,7 @@ export default function Card({ candidateArray, giveVote }) {
               addr.length > 14
                 ? `${addr.slice(0, 8)}...${addr.slice(-6)}`
                 : addr;
+            const canVote = giveVote && currentAccount && voterAllowed && !voterVoted;
             return (
               <div key={addr ? `${addr}-${i}` : `candidate-${i}`} className={Style.card}>
                 <div className={Style.image}>
@@ -54,10 +60,20 @@ export default function Card({ candidateArray, giveVote }) {
                   <p>{name ? `${name} #${candidateId}` : `#${candidateId}`}</p>
                   <p>{age ? `Age: ${age}` : ""}</p>
                   <p>{displayAddr ? `Address: ${displayAddr}` : ""}</p>
+                  <p className={Style.voteCount}>Votes: {voteCount}</p>
                   {giveVote && (
                     <Button
-                      btnName="Vote"
-                      handleClick={() => giveVote(addr, candidateId)}
+                      btnName={
+                        voterVoted
+                          ? "Already voted"
+                          : !currentAccount
+                            ? "Connect to vote"
+                            : !voterAllowed
+                              ? "Not allowed to vote"
+                              : "Vote"
+                      }
+                      handleClick={() => canVote && giveVote(addr, candidateId)}
+                      disabled={!canVote}
                     />
                   )}
                 </div>

@@ -48,6 +48,18 @@
   margin: 0.25rem 0;
 }
 
+.voteCount {
+  font-weight: 600;
+  color: #9a02ac;
+}
+
+.totalVoted {
+  margin: 0 0 1rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #b3b8cd;
+}
+
 /* Small screens: single column, tighter spacing */
 @media screen and (max-width: 480px) {
   .cardWrap {
