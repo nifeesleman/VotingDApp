@@ -1,0 +1,190 @@
+/* NavBar: logo left, Connect/Wallet right; lock toggles nav dropdown. */
+
+.navBar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  background: #1e1b2f;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.message__box {
+  display: flex;
+  justify-content: center;
+  padding: 0.5rem 1rem;
+  background: rgba(239, 68, 68, 0.1);
+  border-bottom: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.message p {
+  margin: 0;
+  color: #fca5a5;
+  font-size: 0.8125rem;
+}
+
+.navBar_row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 72px;
+  padding: 0 1rem;
+  margin: 0 auto;
+  width: 100%;
+  max-width: 1280px;
+  box-sizing: border-box;
+}
+
+.logo {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  padding: 0.25rem 0;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+}
+
+.logo:hover {
+  opacity: 0.9;
+}
+
+.logo_img {
+  display: block;
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+}
+
+.nav_end {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+}
+
+.connect_btn {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fff;
+  background: #8b5cf6;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.connect_btn:hover {
+  background: #7c3aed;
+}
+
+.wallet_wrapper {
+  position: relative;
+}
+
+.wallet_btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.75rem 1.25rem;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #fff;
+  background: #8b5cf6;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.wallet_btn:hover {
+  background: #7c3aed;
+}
+
+.wallet_address {
+  font-variant-numeric: tabular-nums;
+}
+
+.lock_icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.lock_icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.nav_dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 0.25rem;
+  min-width: 200px;
+  padding: 0.375rem;
+  background: #252230;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.nav_dropdown_link {
+  display: block;
+  padding: 0.5rem 0.75rem;
+  color: #e2e8f0;
+  text-decoration: none;
+  font-size: 0.875rem;
+  border-radius: 6px;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.nav_dropdown_link:hover {
+  color: #fff;
+  background: rgba(139, 92, 246, 0.25);
+}
+
+@media (min-width: 768px) {
+  .navBar_row {
+    min-height: 80px;
+    padding: 0 1.5rem;
+  }
+
+  .logo_img {
+    width: 64px;
+    height: 64px;
+  }
+
+  .connect_btn,
+  .wallet_btn {
+    padding: 0.875rem 1.5rem;
+    font-size: 1.0625rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .navBar_row {
+    min-height: 88px;
+    padding: 0 2rem;
+  }
+
+  .logo_img {
+    width: 72px;
+    height: 72px;
+  }
+
+  .connect_btn,
+  .wallet_btn {
+    padding: 0.875rem 1.75rem;
+    font-size: 1.125rem;
+  }
+}
