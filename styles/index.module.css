@@ -1,0 +1,136 @@
+.home {
+  min-height: 100vh;
+  width: 100%;
+  padding: 1rem;
+  box-sizing: border-box;
+  background: linear-gradient(135deg, #1a1625 0%, #231e39 50%, #1a1625 100%);
+  color: #b3b8cd;
+}
+
+.winner {
+  max-width: 900px;
+  margin: 0 auto 1.5rem;
+  padding: 1rem;
+  background: #231e39;
+  border-radius: 1rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(154, 2, 172, 0.3);
+}
+
+.winner__info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.candidate_list {
+  flex: 1 1 140px;
+  min-width: 0;
+  padding: 0.75rem 1rem;
+  background: rgba(154, 2, 172, 0.15);
+  border-radius: 0.5rem;
+  border: 1px solid #9a02ac;
+}
+
+.candidate_list p {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.candidate_list span {
+  display: inline-block;
+  margin-left: 0.35rem;
+  font-weight: 700;
+  color: #9a02ac;
+}
+
+.winner_info {
+  flex: 1 1 140px;
+  min-width: 0;
+  padding: 0.75rem 1rem;
+  background: rgba(154, 2, 172, 0.15);
+  border-radius: 0.5rem;
+  border: 1px solid #9a02ac;
+  text-align: center;
+}
+
+.winner_info small {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 500;
+  opacity: 0.95;
+}
+
+/* Small screens */
+@media screen and (max-width: 480px) {
+  .home {
+    padding: 0.75rem;
+  }
+
+  .winner {
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+  }
+
+  .winner__info {
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .candidate_list,
+  .winner_info {
+    flex: 1 1 auto;
+    padding: 0.6rem 0.75rem;
+  }
+
+  .candidate_list p {
+    font-size: 0.875rem;
+  }
+
+  .winner_info small {
+    font-size: 0.8rem;
+  }
+}
+
+/* Medium screens */
+@media screen and (min-width: 481px) and (max-width: 768px) {
+  .winner__info {
+    gap: 0.875rem;
+  }
+
+  .candidate_list {
+    flex: 1 1 calc(50% - 0.5rem);
+  }
+}
+
+/* Large screens */
+@media screen and (min-width: 1024px) {
+  .home {
+    padding: 1.5rem;
+  }
+
+  .winner {
+    margin-bottom: 2rem;
+    padding: 1.25rem;
+  }
+
+  .winner__info {
+    gap: 1.25rem;
+  }
+
+  .candidate_list,
+  .winner_info {
+    padding: 1rem 1.25rem;
+  }
+
+  .candidate_list p {
+    font-size: 1rem;
+  }
+
+  .winner_info small {
+    font-size: 1rem;
+  }
+}
