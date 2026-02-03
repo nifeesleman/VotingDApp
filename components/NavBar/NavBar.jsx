@@ -57,8 +57,24 @@ const NavBar = () => {
                                 </span>
                             )}
                         </div>
+                        {openNav && (
+                            <div className={Style.navigation}>
+                                <p>
+                                    <Link href={{pathname: "/"}}>Home</Link>
+                                </p>
+                                <p>
+                                    <Link href={{pathname: "/allowed-voters"}}>Allowed Voters</Link>
+                                </p>
+                                <p>
+                                    <Link href={{pathname: "/candidate-registration"}}>Candidate Registration</Link>
+                                </p>
+                                <p>
+                                    <Link href={{pathname: "/voterList"}}>Voter List</Link>
+                                </p>
+                            </div>
+                        )}
                     </div>
-                ) : null}
+                ) : <button onClick={()=>connectWallet()}> Connect Wallet </button>}
             </div>
         </div>
     )
