@@ -62,6 +62,13 @@ export const VotingProvider = ({ children }) => {
   const [voterFetchFailed, setVoterFetchFailed] = useState(false);
   const [votedVotersCount, setVotedVotersCount] = useState(0);
 
+  //--------VOTING PERIOD & WINNER
+  const [votingEndTime, setVotingEndTime] = useState(0);
+  const [winner, setWinner] = useState("");
+  const [winnerDeclared, setWinnerDeclared] = useState(false);
+  const [winnerName, setWinnerName] = useState("");
+  const [winnerVoteCount, setWinnerVoteCount] = useState(0);
+
   //---------CONNECTING METAMASK WALLET
   const checkIfWalletConnected = async () => {
     try {
@@ -514,6 +521,25 @@ export const VotingProvider = ({ children }) => {
       } catch (e) {
         setVotedVotersCount(0);
       }
+      try {
+        const endTime = await contract.votingEndTime();
+        setVotingEndTime(typeof endTime === "bigint" ? Number(endTime) : Number(endTime) || 0);
+        const declared = await contract.winnerDeclared();
+        setWinnerDeclared(!!declared);
+        const winnerAddr = await contract.winner();
+        const addrStr = winnerAddr ? String(winnerAddr) : "";
+        setWinner(addrStr);
+        if (declared && addrStr && addrStr !== ethers.ZeroAddress) {
+          const [addr, name, count] = await contract.getWinnerData();
+          setWinnerName(name || "");
+          setWinnerVoteCount(typeof count === "bigint" ? Number(count) : Number(count) || 0);
+        } else if (declared) {
+          setWinnerName("");
+          setWinnerVoteCount(0);
+        }
+      } catch (e) {
+        console.warn("Winner/votingEndTime fetch failed (old contract?):", e?.message || e);
+      }
       console.log("CANDIDATE LENGTH", candidateData.length);
     } catch (error) {
       console.log(error);
@@ -524,6 +550,23 @@ export const VotingProvider = ({ children }) => {
           "An error occurred while fetching candidates"
       );
     }
+  }, []);
+
+  // Listen for WinnerDeclared event (provider-based contract for events)
+  useEffect(() => {
+    if (!window.ethereum || !VotingAddress || !VotingABI?.length) return;
+    const provider = new ethers.BrowserProvider(window.ethereum);
+    const contract = new ethers.Contract(VotingAddress, VotingABI, provider);
+    const handler = (winnerAddress, name, voteCount) => {
+      setWinner(winnerAddress ? String(winnerAddress) : "");
+      setWinnerName(name || "");
+      setWinnerVoteCount(typeof voteCount === "bigint" ? Number(voteCount) : Number(voteCount) || 0);
+      setWinnerDeclared(true);
+    };
+    contract.on("WinnerDeclared", handler);
+    return () => {
+      contract.off("WinnerDeclared", handler);
+    };
   }, []);
 
   // Check wallet connection on mount and when account changes
@@ -566,6 +609,12 @@ export const VotingProvider = ({ children }) => {
         candidateFetchFailed,
         currentAccount,
         votedVotersCount,
+        votingEndTime,
+        winner,
+        winnerDeclared,
+        winnerName,
+        winnerVoteCount,
+        declareWinner,
       }}
     >
       {children}

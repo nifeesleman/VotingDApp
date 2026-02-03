@@ -19,7 +19,15 @@ export const index = () => {
     candidateArray,
     voterArray,
     votedVotersCount,
+    votingEndTime,
+    winnerDeclared,
+    winnerName,
+    declareWinner,
   } = useContext(VoterContext);
+
+  const [showWinnerModal, setShowWinnerModal] = useState(false);
+  const winnerDisplayName = winnerName?.trim() || "";
+  const hasWinner = winnerDeclared && winnerDisplayName.length > 0;
 
   const currentVoter = voterArray?.find(
     (v) => v.voterAddress?.toLowerCase() === currentAccount?.toLowerCase()
@@ -37,6 +45,13 @@ export const index = () => {
       getAllVoterData();
     }
   }, [currentAccount, getNewCandidate, getAllVoterData]);
+
+  useEffect(() => {
+    if (winnerDeclared) setShowWinnerModal(true);
+  }, [winnerDeclared]);
+
+  const countdownDate = votingEndTime > 0 ? votingEndTime * 1000 : Date.now() + 100000;
+
   return (
     <div className={Style.home}>
       {currentAccount && (
@@ -51,8 +66,30 @@ export const index = () => {
           </div>
           <div className={Style.winner_info}>
             <small>
-              <Countdown date={Date.now() + 100000}/>
+              <Countdown date={countdownDate} />
             </small>
+          </div>
+          {canDeclareWinner && (
+            <div className={Style.declareWinnerWrap}>
+              <button type="button" className={Style.declareWinnerBtn} onClick={declareWinner}>
+                Declare winner
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+      {showWinnerModal && winnerDeclared && (
+        <div className={Style.winnerModalOverlay} onClick={() => setShowWinnerModal(false)} role="dialog" aria-modal="true" aria-label="Winner announced">
+          <div className={Style.winnerModal} onClick={(e) => e.stopPropagation()}>
+            <button type="button" className={Style.winnerModalClose} onClick={() => setShowWinnerModal(false)} aria-label="Close">×</button>
+            <h2 className={Style.winnerModalTitle}>
+              {hasWinner ? "Congratulations!" : "Voting ended"}
+            </h2>
+            <p className={Style.winnerModalMessage}>
+              {hasWinner
+                ? `The winner is: ${winnerDisplayName} 🎉`
+                : "No winner (no votes or no candidates)."}
+            </p>
           </div>
         </div>
       )}

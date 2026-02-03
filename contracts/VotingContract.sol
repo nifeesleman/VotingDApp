@@ -64,8 +64,57 @@ contract Create {
 
     //----------END OF VOTER DATA
 
+    //----------VOTING PERIOD & WINNER
+    uint256 public votingEndTime;
+    address public winner;
+    bool public winnerDeclared;
+
+    event WinnerDeclared(address indexed winnerAddress, string name, uint256 voteCount);
+
+    modifier onlyOrganizer() {
+        require(VotingOrganizer == msg.sender, "Only organizer");
+        _;
+    }
+
     constructor() {
         VotingOrganizer = msg.sender;
+    }
+
+    function setVotingEndTime(uint256 _endTime) external onlyOrganizer {
+        require(_endTime > block.timestamp, "End time must be in future");
+        require(votingEndTime == 0, "End time already set");
+        votingEndTime = _endTime;
+    }
+
+    function declareWinner() external {
+        require(votingEndTime != 0, "Voting end time not set");
+        require(block.timestamp >= votingEndTime, "Voting period not ended");
+        require(!winnerDeclared, "Winner already declared");
+
+        winnerDeclared = true;
+        uint256 maxVotes = 0;
+        uint256 len = candidateAddresses.length;
+
+        for (uint256 i = 0; i < len; i++) {
+            address cand = candidateAddresses[i];
+            uint256 count = candidates[cand].voteCount;
+            if (count > maxVotes) {
+                maxVotes = count;
+                winner = cand;
+            }
+        }
+
+        if (winner == address(0)) {
+            emit WinnerDeclared(address(0), "", 0);
+            return;
+        }
+
+        emit WinnerDeclared(winner, candidates[winner].name, candidates[winner].voteCount);
+    }
+
+    function getWinnerData() external view returns (address, string memory, uint256) {
+        if (winner == address(0)) return (address(0), "", 0);
+        return (winner, candidates[winner].name, candidates[winner].voteCount);
     }
 
     function setCandidate(
@@ -144,6 +193,8 @@ contract Create {
     }
 
     function vote(address _candidateAddress, uint256 _candidateVoteId) external {
+        require(votingEndTime != 0 && block.timestamp < votingEndTime, "Voting has ended");
+        require(!winnerDeclared, "Winner already declared");
         Voter storage voter = voters[msg.sender];
         require(!voter.voter_voted, "You have already voted");
         require(voter.voter_allowed != 0, "You do not have voting rights");
