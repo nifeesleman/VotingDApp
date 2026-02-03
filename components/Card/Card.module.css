@@ -1,37 +1,93 @@
 .cardWrap {
   padding: 1rem;
   color: #b3b8cd;
+  width: 100%;
+  box-sizing: border-box;
 }
+
 .empty {
   text-align: center;
   opacity: 0.9;
+  font-size: 0.95rem;
 }
+
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 1rem;
 }
+
 .card {
   border: 1px solid #9a02ac;
   border-radius: 0.5rem;
   padding: 0.5rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   background: #231e39;
+  min-width: 0;
 }
+
 .image {
   width: 100%;
   border-radius: 0.3rem;
   overflow: hidden;
 }
+
 .image img {
   width: 100%;
   height: auto;
   display: block;
+  max-width: 100%;
 }
+
 .info {
   padding: 0.5rem 0;
   font-size: 0.9rem;
 }
+
 .info p {
   margin: 0.25rem 0;
+}
+
+/* Small screens: single column, tighter spacing */
+@media screen and (max-width: 480px) {
+  .cardWrap {
+    padding: 0.75rem;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .card {
+    padding: 0.75rem;
+  }
+
+  .info {
+    font-size: 0.85rem;
+  }
+
+  .empty {
+    font-size: 0.9rem;
+  }
+}
+
+/* Medium screens: 2 columns on narrow tablets */
+@media screen and (min-width: 481px) and (max-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.875rem;
+  }
+}
+
+/* Large screens: allow more columns */
+@media screen and (min-width: 1024px) {
+  .cardWrap {
+    padding: 1.5rem;
+  }
+
+  .grid {
+    gap: 1.25rem;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  }
 }
