@@ -17,7 +17,14 @@ export const index = () => {
     candidateLength,
     giveVote,
     candidateArray,
+    voterArray,
+    votedVotersCount,
   } = useContext(VoterContext);
+
+  const currentVoter = voterArray?.find(
+    (v) => v.voterAddress?.toLowerCase() === currentAccount?.toLowerCase()
+  );
+  const voterVoted = currentVoter?.voted ?? false;
 
   useEffect(() => {
     checkIfWalletConnected();
@@ -49,7 +56,14 @@ export const index = () => {
           </div>
         </div>
       )}
-    <Card candidateArray={candidateArray} giveVote={giveVote} />
+    <Card
+      candidateArray={candidateArray}
+      giveVote={giveVote}
+      totalVoted={votedVotersCount}
+      currentAccount={currentAccount}
+      voterVoted={voterVoted}
+      voterAllowed={!!currentVoter}
+    />
     </div>
   );
 };

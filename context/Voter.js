@@ -60,6 +60,7 @@ export const VotingProvider = ({ children }) => {
   const [voterLength, setVoterLength] = useState(0);
   const [voterAddress, setVoterAddress] = useState([]);
   const [voterFetchFailed, setVoterFetchFailed] = useState(false);
+  const [votedVotersCount, setVotedVotersCount] = useState(0);
 
   //---------CONNECTING METAMASK WALLET
   const checkIfWalletConnected = async () => {
@@ -70,6 +71,7 @@ export const VotingProvider = ({ children }) => {
       });
       if (accounts.length) {
         setCurrentAccount(accounts[0]);
+        setError("");
       } else {
         setError("No Account Found");
       }
@@ -86,6 +88,10 @@ export const VotingProvider = ({ children }) => {
         method: "eth_requestAccounts",
       });
       setCurrentAccount(accounts[0]);
+      setError("");
+      if (accounts[0]) {
+        window.location.reload();
+      }
     } catch (error) {
       setError("An error occurred while connecting the wallet");
     }
@@ -336,11 +342,36 @@ export const VotingProvider = ({ children }) => {
       setError(errorMessage);
     }
   }, []);
-  //--------GIVE-VOTE
-  const giveVote = async (id) => {
+  //--------GIVE-VOTE (voter = msg.sender = connected wallet; must be allowed and not voted)
+  const giveVote = async (candidateAddress, candidateVoteId) => {
     try {
+      if (!currentAccount) {
+        return setError("Connect your wallet to vote");
+      }
+      if (!window.ethereum || !VotingAddress) {
+        return setError("Wallet or contract not configured");
+      }
+      const web3Modal = new Web3Modal();
+      const connection = await web3Modal.connect();
+      const provider = new ethers.BrowserProvider(connection);
+      const signer = await provider.getSigner();
+      const signerAddress = await signer.getAddress();
+      if (signerAddress.toLowerCase() !== currentAccount.toLowerCase()) {
+        return setError("Please use the same connected account to vote");
+      }
+      const contract = fetchContract(signer);
+      const tx = await contract.vote(candidateAddress, candidateVoteId);
+      await tx.wait();
+      setError("");
+      await getNewCandidate();
+      await getAllVoterData();
     } catch (error) {
-      console.log(error);
+      console.error("Error voting:", error);
+      const msg =
+        error?.reason ||
+        error?.message ||
+        "Failed to vote. Check that your address is allowed and you have not voted yet.";
+      setError(msg);
     }
   };
 
@@ -477,6 +508,12 @@ export const VotingProvider = ({ children }) => {
       const candidateData = await Promise.all(candidatePromises);
       setCandidateArray(candidateData);
       setCandidateLength(candidateData.length);
+      try {
+        const votedList = await contract.getVotedVoterList();
+        setVotedVotersCount(Array.isArray(votedList) ? votedList.length : 0);
+      } catch (e) {
+        setVotedVotersCount(0);
+      }
       console.log("CANDIDATE LENGTH", candidateData.length);
     } catch (error) {
       console.log(error);
@@ -528,6 +565,7 @@ export const VotingProvider = ({ children }) => {
         candidateLength,
         candidateFetchFailed,
         currentAccount,
+        votedVotersCount,
       }}
     >
       {children}
