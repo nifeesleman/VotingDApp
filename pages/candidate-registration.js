@@ -96,54 +96,64 @@ const CandidateRegistration = () => {
             </div>
             <div className={Style.card}>
               {candidateArray?.length > 0 ? (
-                candidateArray
-                  .filter((el) => el != null)
-                  .map((el, i) => {
-                    // getcandidatedata returns: age(0), name(1), candidateId(2), image(3), voteCount(4), ipfs(5), address(6)
-                    const name = (el[1] ?? el.name ?? "").toString();
-                    const rawId = el[2] ?? el.candidateId;
-                    const candidateId =
-                      typeof rawId === "bigint"
-                        ? Number(rawId)
-                        : rawId != null
-                          ? String(rawId)
-                          : "";
-                    const imageUrl = (el[3] ?? el.image ?? "").toString();
-                    const age = (el[0] ?? el.age ?? "").toString();
-                    const rawAddr = el[6] ?? el._address ?? el.address;
-                    const addr =
-                      typeof rawAddr === "string"
-                        ? rawAddr
-                        : rawAddr != null
-                          ? String(rawAddr)
-                          : "";
-                    const displayAddr =
-                      addr.length > 14
-                        ? `${addr.slice(0, 8)}...${addr.slice(-6)}`
-                        : addr;
-                    return (
-                      <div
-                        key={addr ? `${addr}-${i}` : `candidate-${i}`}
-                        className={Style.card_box}
-                      >
-                        <div className={Style.image}>
-                          <img
-                            src={imageUrl || "/file.svg"}
-                            alt={name ? `${name} profile` : "Candidate"}
-                            onError={(e) => {
-                              const img = e.currentTarget;
-                              if (img && img.src !== "/file.svg") img.src = "/file.svg";
-                            }}
-                          />
-                        </div>
-                        <div className={Style.card_info}>
-                          <p>{name ? `${name} #${candidateId}` : `#${candidateId}`}</p>
-                          <p>{age ? `Age: ${age}` : ""}</p>
-                          <p>{displayAddr ? `Address: ${displayAddr}` : ""}</p>
-                        </div>
-                      </div>
-                    );
-                  })
+                <>
+                  <div className={Style.totalWrap}>
+                    <span className={Style.totalLabel}>Total candidates</span>
+                    <span className={Style.totalCount}>{candidateArray.filter((el) => el != null).length}</span>
+                  </div>
+                  <div className={Style.cardGrid}>
+                    {candidateArray
+                      .filter((el) => el != null)
+                      .map((el, i) => {
+                        const name = (el[1] ?? el.name ?? "").toString();
+                        const rawId = el[2] ?? el.candidateId;
+                        const candidateId = typeof rawId === "bigint" ? Number(rawId) : rawId != null ? Number(rawId) : 0;
+                        const imageUrl = (el[3] ?? el.image ?? "").toString();
+                        const age = (el[0] ?? el.age ?? "").toString();
+                        const rawVoteCount = el[4] ?? el.voteCount ?? 0;
+                        const voteCount = typeof rawVoteCount === "bigint" ? Number(rawVoteCount) : Number(rawVoteCount) || 0;
+                        const rawAddr = el[6] ?? el._address ?? el.address;
+                        const addr = typeof rawAddr === "string" ? rawAddr : rawAddr != null ? String(rawAddr) : "";
+                        const displayAddr = addr.length > 14 ? `${addr.slice(0, 8)}...${addr.slice(-6)}` : addr;
+                        return (
+                          <div key={addr ? `${addr}-${i}` : `candidate-${i}`} className={Style.card_box}>
+                            <div className={Style.cardImage}>
+                              <img
+                                src={imageUrl || "/file.svg"}
+                                alt={name ? `${name} profile` : "Candidate"}
+                                onError={(e) => {
+                                  const img = e.currentTarget;
+                                  if (img && img.src !== "/file.svg") img.src = "/file.svg";
+                                }}
+                              />
+                            </div>
+                            <div className={Style.card_info}>
+                              <div className={Style.cardHeader}>
+                                <h3 className={Style.cardTitle}>{name || "Candidate"}</h3>
+                                <span className={Style.cardId}>#{candidateId}</span>
+                              </div>
+                              {age && (
+                                <div className={Style.infoRow}>
+                                  <span className={Style.infoLabel}>Age</span>
+                                  <span className={Style.infoValue}>{age}</span>
+                                </div>
+                              )}
+                              {displayAddr && (
+                                <div className={Style.infoRow}>
+                                  <span className={Style.infoLabel}>Address</span>
+                                  <span className={Style.infoValue} title={addr}>{displayAddr}</span>
+                                </div>
+                              )}
+                              <div className={Style.voteCountWrap}>
+                                <span className={Style.voteCountLabel}>Votes</span>
+                                <span className={Style.voteCountBadge}>{voteCount}</span>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                  </div>
+                </>
               ) : candidateFetchFailed ? (
                 <div className={Style.card_info}>
                   <p className={Style.sideInfo_para}>
