@@ -44,7 +44,7 @@ export const VotingProvider = ({ children }) => {
   const router = useRouter();
   //--------CANDIDATE SECTION
   const [currentAccount, setCurrentAccount] = useState("");
-  const [candidateLength, setCandidateLength] = useState("");
+  const [candidateLength, setCandidateLength] = useState(0);
   const pushCandidate = [];
   const candidateIndex = [];
   const [candidateArray, setCandidateArray] = useState(pushCandidate);
@@ -57,7 +57,7 @@ export const VotingProvider = ({ children }) => {
   const pushVoter = [];
   const voterIndex = [];
   const [voterArray, setVoterArray] = useState(pushVoter);
-  const [voterLength, setVoterLength] = useState("");
+  const [voterLength, setVoterLength] = useState(0);
   const [voterAddress, setVoterAddress] = useState([]);
   const [voterFetchFailed, setVoterFetchFailed] = useState(false);
 
@@ -298,8 +298,6 @@ export const VotingProvider = ({ children }) => {
         try {
           const singleVoterData = await contract.getVoterdata(el);
           pushVoter.push(singleVoterData);
-          const voterList = await contract.getVoterLength();
-          setVoterLength(voterList, "voter length");
 
           // Destructure the tuple properly
           const [voterId, name, image, address, allowed, voted] =
@@ -495,11 +493,13 @@ export const VotingProvider = ({ children }) => {
   useEffect(() => {
     checkIfWalletConnected();
   }, []);
+  // Fetch candidate and voter data when wallet is connected (so counts/lists update on index)
   useEffect(() => {
-    getNewCandidate();
-  }, [getNewCandidate]);
+    if (currentAccount) {
+      getNewCandidate();
+    }
+  }, [currentAccount, getNewCandidate]);
 
-  // Fetch voter data when wallet is connected
   useEffect(() => {
     if (currentAccount) {
       getAllVoterData();

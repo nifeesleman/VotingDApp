@@ -8,7 +8,49 @@ import Style from "../styles/index.module.css";
 import Card from "../components/Card/Card";
 
 export const index = () => {
-  const { VotingTittle } = useContext(VoterContext);
-  return <div>{VotingTittle};</div>;
+  const {
+    checkIfWalletConnected,
+    currentAccount,
+    voterLength,
+    getNewCandidate,
+    getAllVoterData,
+    candidateLength,
+    giveVote,
+    candidateArray,
+  } = useContext(VoterContext);
+
+  useEffect(() => {
+    checkIfWalletConnected();
+  }, [checkIfWalletConnected]);
+
+  // Refetch counts when wallet is connected so No Candidate / No Voter stay in sync
+  useEffect(() => {
+    if (currentAccount) {
+      getNewCandidate();
+      getAllVoterData();
+    }
+  }, [currentAccount, getNewCandidate, getAllVoterData]);
+  return (
+    <div className={Style.home}>
+      {currentAccount && (
+        <div className={Style.winner}>
+          <div className={Style.winner__info}>
+            <div className={Style.candidate_list}>
+              <p>No Candidate:<span>{Number(candidateLength) ?? 0}</span></p>
+            </div>
+            <div className={Style.candidate_list}>
+              <p>No Voter:<span>{Number(voterLength) ?? 0}</span></p>
+            </div>
+          </div>
+          <div className={Style.winner_info}>
+            <small>
+              <Countdown date={Date.now() + 100000}/>
+            </small>
+          </div>
+        </div>
+      )}
+    <Card candidateArray={candidateArray} giveVote={giveVote} />
+    </div>
+  );
 };
 export default index;
