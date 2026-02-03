@@ -88,55 +88,64 @@ const allowedVoters = () => {
             </div>
             <div className={Style.card}>
               {voterArray?.length > 0 ? (
-                voterArray
-                  .filter((el) => el != null)
-                  .map((el, i) => {
-                    const name = (el.name ?? "").toString();
-                    const voterId = (el.voterId ?? "").toString();
-                    let imageUrl = (el.image ?? "").toString();
-                    if (
-                      !imageUrl ||
-                      imageUrl.startsWith("data:application/json") ||
-                      imageUrl.includes("metadata.json") ||
-                      imageUrl.endsWith(".json")
-                    ) {
-                      imageUrl = "";
-                    }
-                    const addr =
-                      typeof el.voterAddress === "string"
-                        ? el.voterAddress
-                        : (el.address ?? el.voterAddress ?? "").toString();
-                    const displayAddr =
-                      addr.length > 14
-                        ? `${addr.slice(0, 8)}...${addr.slice(-6)}`
-                        : addr;
-                    const allowed = el.allowed != null ? String(el.allowed) : "";
-                    const voted = el.voted === true ? "Voted" : "Not voted";
-                    return (
-                      <div
-                        key={addr ? `${addr}-${i}` : `voter-${i}`}
-                        className={Style.card_box}
-                      >
-                        <div className={Style.image}>
-                          <img
-                            src={imageUrl || "/file.svg"}
-                            alt={name ? `${name} profile` : "Voter"}
-                            onError={(e) => {
-                              const img = e.currentTarget;
-                              if (img && img.src !== "/file.svg")
-                                img.src = "/file.svg";
-                            }}
-                          />
-                        </div>
-                        <div className={Style.card_info}>
-                          <p>{name ? `${name} #${voterId}` : `#${voterId}`}</p>
-                          <p>{displayAddr ? `Address: ${displayAddr}` : ""}</p>
-                          <p>{allowed ? `Allowed: ${allowed}` : ""}</p>
-                          <p>{voted}</p>
-                        </div>
-                      </div>
-                    );
-                  })
+                <>
+                  <div className={Style.totalWrap}>
+                    <span className={Style.totalLabel}>Total voters</span>
+                    <span className={Style.totalCount}>{voterArray.filter((el) => el != null).length}</span>
+                  </div>
+                  <div className={Style.cardGrid}>
+                    {voterArray
+                      .filter((el) => el != null)
+                      .map((el, i) => {
+                        const name = (el.name ?? "").toString();
+                        const rawId = el.voterId ?? "";
+                        const voterId = rawId != null ? String(rawId) : "";
+                        let imageUrl = (el.image ?? "").toString();
+                        if (!imageUrl || imageUrl.startsWith("data:application/json") || imageUrl.includes("metadata.json") || imageUrl.endsWith(".json")) {
+                          imageUrl = "";
+                        }
+                        const rawAddr = el.voterAddress ?? el.address;
+                        const addr = typeof rawAddr === "string" ? rawAddr : rawAddr != null ? String(rawAddr) : "";
+                        const displayAddr = addr.length > 14 ? `${addr.slice(0, 8)}...${addr.slice(-6)}` : addr;
+                        const allowed = el.allowed !== undefined && el.allowed !== "0";
+                        const voted = !!el.voted;
+                        return (
+                          <div key={addr ? `${addr}-${i}` : `voter-${i}`} className={Style.card_box}>
+                            <div className={Style.cardImage}>
+                              <img
+                                src={imageUrl || "/file.svg"}
+                                alt={name ? `${name} profile` : "Voter"}
+                                onError={(e) => {
+                                  const img = e.currentTarget;
+                                  if (img && img.src !== "/file.svg") img.src = "/file.svg";
+                                }}
+                              />
+                            </div>
+                            <div className={Style.card_info}>
+                              <div className={Style.cardHeader}>
+                                <h3 className={Style.cardTitle}>{name || "Voter"}</h3>
+                                <span className={Style.cardId}>#{voterId}</span>
+                              </div>
+                              {displayAddr && (
+                                <div className={Style.infoRow}>
+                                  <span className={Style.infoLabel}>Address</span>
+                                  <span className={Style.infoValue} title={addr}>{displayAddr}</span>
+                                </div>
+                              )}
+                              <div className={Style.infoRow}>
+                                <span className={Style.infoLabel}>Allowed</span>
+                                <span className={allowed ? Style.badgeYes : Style.badgeNo}>{allowed ? "Yes" : "No"}</span>
+                              </div>
+                              <div className={Style.infoRow}>
+                                <span className={Style.infoLabel}>Status</span>
+                                <span className={voted ? Style.badgeVoted : Style.badgeNotVoted}>{voted ? "Voted" : "Not voted"}</span>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                  </div>
+                </>
               ) : voterFetchFailed ? (
                 <div className={Style.card_info}>
                   <p className={Style.sideInfo_para}>
