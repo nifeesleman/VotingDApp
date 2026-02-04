@@ -218,6 +218,7 @@ const CandidateRegistration = () => {
               inputType="text"
               title="Name"
               placeholder="Enter Name"
+              value={candidateForm.name}
               handleChange={(e) =>
                 setCandidateForm({ ...candidateForm, name: e.target.value })
               }
@@ -226,6 +227,7 @@ const CandidateRegistration = () => {
               inputType="text"
               title="Address"
               placeholder="Candidate Address"
+              value={candidateForm.address}
               handleChange={(e) =>
                 setCandidateForm({ ...candidateForm, address: e.target.value })
               }
@@ -234,6 +236,7 @@ const CandidateRegistration = () => {
               inputType="text"
               title="Age"
               placeholder="Candidate Age"
+              value={candidateForm.age}
               handleChange={(e) =>
                 setCandidateForm({ ...candidateForm, age: e.target.value })
               }

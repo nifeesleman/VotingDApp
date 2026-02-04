@@ -214,6 +214,7 @@ const allowedVoters = () => {
               inputType="text"
               title="Name"
               placeholder="Enter Name"
+              value={formInput.name}
               handleChange={(e) =>
                 setFormInput({ ...formInput, name: e.target.value })
               }
@@ -222,6 +223,7 @@ const allowedVoters = () => {
               inputType="text"
               title="Address"
               placeholder="Voter Addresss"
+              value={formInput.address}
               handleChange={(e) =>
                 setFormInput({ ...formInput, address: e.target.value })
               }
@@ -230,6 +232,7 @@ const allowedVoters = () => {
               inputType="text"
               title="Position"
               placeholder="Voter Position"
+              value={formInput.position}
               handleChange={(e) =>
                 setFormInput({ ...formInput, position: e.target.value })
               }

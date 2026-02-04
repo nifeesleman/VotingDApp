@@ -5,7 +5,7 @@ A decentralized voting application built on Ethereum blockchain, enabling transp
 ## Overview
 
 VotingDApp is a Web3 voting application that allows an organizer to:
-
+[VotingContract.sol](contracts/VotingContract.sol)
 - Register candidates for elections
 - Grant voting rights to eligible voters
 - Enable voters to cast votes securely on the blockchain
