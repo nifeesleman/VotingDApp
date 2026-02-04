@@ -349,6 +349,39 @@ export const VotingProvider = ({ children }) => {
       setError(errorMessage);
     }
   }, []);
+
+  //--------DECLARE WINNER (anyone can call once voting period has ended)
+  const declareWinner = async () => {
+    try {
+      if (!window.ethereum || !VotingAddress) {
+        return setError("Wallet or contract not configured");
+      }
+      const web3Modal = new Web3Modal();
+      const connection = await web3Modal.connect();
+      const provider = new ethers.BrowserProvider(connection);
+      const signer = await provider.getSigner();
+      const contract = fetchContract(signer);
+      const tx = await contract.declareWinner();
+      await tx.wait();
+      setError("");
+      const declared = await contract.winnerDeclared();
+      setWinnerDeclared(!!declared);
+      const winnerAddr = await contract.winner();
+      setWinner(winnerAddr ? String(winnerAddr) : "");
+      if (declared && winnerAddr && String(winnerAddr) !== ethers.ZeroAddress) {
+        const [, name, count] = await contract.getWinnerData();
+        setWinnerName(name || "");
+        setWinnerVoteCount(typeof count === "bigint" ? Number(count) : Number(count) || 0);
+      } else {
+        setWinnerName("");
+        setWinnerVoteCount(0);
+      }
+    } catch (err) {
+      console.error("Error declaring winner:", err);
+      setError(err?.reason || err?.message || "Failed to declare winner");
+    }
+  };
+
   //--------GIVE-VOTE (voter = msg.sender = connected wallet; must be allowed and not voted)
   const giveVote = async (candidateAddress, candidateVoteId) => {
     try {
@@ -569,10 +602,25 @@ export const VotingProvider = ({ children }) => {
     };
   }, []);
 
-  // Check wallet connection on mount and when account changes
+  // Check wallet connection on mount
   useEffect(() => {
     checkIfWalletConnected();
   }, []);
+
+  // When user switches account in MetaMask, update currentAccount and refetch data
+  useEffect(() => {
+    if (!window.ethereum) return;
+    const handleAccountsChanged = (accounts) => {
+      const account = accounts?.[0] || "";
+      setCurrentAccount(account);
+      setError(account ? "" : "No Account Found");
+    };
+    window.ethereum.on("accountsChanged", handleAccountsChanged);
+    return () => {
+      window.ethereum.removeListener?.("accountsChanged", handleAccountsChanged);
+    };
+  }, []);
+
   // Fetch candidate and voter data when wallet is connected (so counts/lists update on index)
   useEffect(() => {
     if (currentAccount) {
