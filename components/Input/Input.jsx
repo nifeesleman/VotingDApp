@@ -5,6 +5,7 @@ export const Input = ({
   inputType,
   title,
   placeholder,
+  value,
   handleChange,
   handleClick, // kept for backward compatibility
   Button,
@@ -18,6 +19,7 @@ export const Input = ({
             type="text"
             className={Style.input__box__form}
             placeholder={placeholder}
+            value={value ?? ""}
             onChange={handleChange || handleClick}
           />
         </div>
