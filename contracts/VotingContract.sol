@@ -193,8 +193,8 @@ contract Create {
     }
 
     function vote(address _candidateAddress, uint256 _candidateVoteId) external {
-        require(votingEndTime != 0 && block.timestamp < votingEndTime, "Voting has ended");
         require(!winnerDeclared, "Winner already declared");
+        require(votingEndTime == 0 || block.timestamp < votingEndTime, "Voting has ended");
         Voter storage voter = voters[msg.sender];
         require(!voter.voter_voted, "You have already voted");
         require(voter.voter_allowed != 0, "You do not have voting rights");
